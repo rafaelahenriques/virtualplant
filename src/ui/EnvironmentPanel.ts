@@ -3,9 +3,19 @@ import type { EnvironmentState } from '../ecosystem/Environment';
 import type { EcosystemStore } from '../store/ecosystemStore';
 import type { HandTracker } from '../tracking/HandTracker';
 
-/** Development controls for tweaking the environment and checking hand tracking. */
+/** Development controls for tweaking the ecosystem and checking hand tracking. */
 export function createEnvironmentPanel(store: EcosystemStore, tracker: HandTracker): GUI {
   const gui = new GUI({ title: 'Environment' });
+
+  const growth = {
+    get target() {
+      return store.getState().growthTarget;
+    },
+    set target(value: number) {
+      store.getState().setGrowthTarget(value);
+    },
+  };
+  gui.add(growth, 'target', 0, 1, 0.01).name('growth').decimals(2).listen();
 
   const values = { ...store.getState().environment };
   for (const key of Object.keys(values) as (keyof EnvironmentState)[]) {
@@ -27,7 +37,6 @@ function addHandTrackingControls(gui: GUI, tracker: HandTracker): void {
       if (state.status === 'tracking') {
         tracker.stop();
         state.status = 'off';
-        state.hands = 0;
         button.name('Start');
         return;
       }
@@ -35,9 +44,7 @@ function addHandTrackingControls(gui: GUI, tracker: HandTracker): void {
       state.status = 'loading';
       button.disable();
       try {
-        await tracker.start((hands) => {
-          state.hands = hands.length;
-        });
+        await tracker.start();
         state.status = 'tracking';
         button.name('Stop');
       } catch (error) {
@@ -49,6 +56,10 @@ function addHandTrackingControls(gui: GUI, tracker: HandTracker): void {
       }
     },
   };
+
+  tracker.subscribe((hands) => {
+    state.hands = hands.length;
+  });
 
   folder.add(state, 'status').name('Status').disable().listen();
   folder.add(state, 'hands').name('Hands').disable().listen();
