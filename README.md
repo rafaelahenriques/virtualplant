@@ -4,7 +4,7 @@ A living 3D environment where hand gestures influence plant growth and environme
 
 The procedural plant generator and growth simulation are the technical centrepiece. Hand tracking is how you interact with them.
 
-**Status:** early, see the [roadmap](#roadmap). You can pinch to move a placeholder plant through its growth stages, and its leaves respond to the wind setting in the development panel.
+**Status:** early, see the [roadmap](#roadmap). You can pinch to move a placeholder plant through its growth stages and move your palm to scan it in colour. Its leaves respond to the wind setting in the development panel.
 
 ## Pinch to grow
 
@@ -20,6 +20,12 @@ Growth changes the plant's form, not its size. Spreading your thumb and index fi
 No model training is involved. ml5 HandPose is already trained and returns 21 landmarks per hand, and a pinch is the distance between two of them, divided by palm length so it reads the same near or far from the camera. With no hand in view, the plant holds its current stage.
 
 The overlay shows the live reading. If `grow` can't reach 0 or 1 on your hand, adjust `PINCHED_RATIO` and `SPREAD_RATIO` in `src/tracking/GestureRecognizer.ts`.
+
+## Scan window
+
+Outside the scan window the plant is an x-ray. Inside it, the same plant at the same growth stage renders as a solid flower in colour. The window follows the centre of your palm, which stays still while your fingers pinch, so one hand controls growth and position at once. With no hand in view, it stays where it is.
+
+The scene is drawn twice each frame: the x-ray across the whole screen, then the colour look clipped to the window with a scissor test.
 
 ## Getting started
 
@@ -67,13 +73,13 @@ Each file arrives with the phase that needs it, so nothing in `src/` is an empty
 
 ```text
 src/
-├── core/       Scene, Camera, Renderer, AnimationLoop, math
-├── tracking/   HandTracker, GestureRecognizer, GestureMapper
+├── core/       Scene, Camera, Renderer, AnimationLoop, ScanWindow, math
+├── tracking/   HandTracker, GestureRecognizer, GestureMapper, videoSpace
 ├── ecosystem/  Environment
 │               Simulation (phase 6), Ecosystem, PlantManager (phase 7)
 ├── plants/     Plant (placeholder), Flower, GrowthSystem
 │               PlantGenerator, Stem, Branch, Leaf (phase 2)
-├── shaders/    stem.vert, leaf.vert, petal.vert, xray.frag
+├── shaders/    stem.vert, leaf.vert, petal.vert, xray.frag, specimen.frag
 │               wind.vert (phase 8)
 ├── ui/         EnvironmentPanel, HUD
 ├── store/      ecosystemStore
@@ -83,7 +89,7 @@ src/
 
 Shaders are imported as strings with Vite's `?raw` suffix, for example `import leafVertex from '../shaders/leaf.vert?raw'`.
 
-The visual direction is plants as x-ray specimens under machine observation: translucent, veined tissue on near-black, with thin tracking overlays and monospace readouts.
+The visual direction is plants as x-ray specimens under machine observation: translucent, veined tissue on near-black, a colour scan window, thin tracking overlays and monospace readouts.
 
 ## Roadmap
 
