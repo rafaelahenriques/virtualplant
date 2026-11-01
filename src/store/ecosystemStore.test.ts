@@ -19,4 +19,12 @@ describe('ecosystemStore', () => {
     expect(store.getState().environment.wind).toBe(1);
     expect(store.getState().environment.rainfall).toBe(0);
   });
+
+  it('clamps the growth target to 0..1', () => {
+    const store = createEcosystemStore();
+    store.getState().setGrowthTarget(3);
+    expect(store.getState().growthTarget).toBe(1);
+    store.getState().setGrowthTarget(-3);
+    expect(store.getState().growthTarget).toBe(0);
+  });
 });

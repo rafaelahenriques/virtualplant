@@ -1,0 +1,7 @@
+/** Higher settles faster: at 2.5 the plant covers about 90% of a change in one second. */
+const EVOLVE_RATE = 2.5;
+
+/** Eases growth towards its target, so the plant evolves instead of snapping to the hand. */
+export function stepGrowth(growth: number, target: number, delta: number): number {
+  return target + (growth - target) * Math.exp(-EVOLVE_RATE * delta);
+}

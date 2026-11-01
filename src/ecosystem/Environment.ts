@@ -1,3 +1,5 @@
+import { clamp01 } from '../core/math';
+
 /** Every value is normalised to 0..1, so gestures and the simulation share one scale. */
 export interface EnvironmentState {
   temperature: number;
@@ -16,8 +18,6 @@ export const DEFAULT_ENVIRONMENT: EnvironmentState = {
   wind: 0.2,
   pollution: 0,
 };
-
-const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));
 
 export function clampEnvironment(state: EnvironmentState): EnvironmentState {
   return {
