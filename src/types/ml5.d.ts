@@ -13,11 +13,24 @@ declare module 'ml5' {
     name: string;
   }
 
+  /** ml5 also exposes each keypoint on the hand by name, with 2D and 3D positions together. */
+  export interface NamedHandKeypoint {
+    x: number;
+    y: number;
+    x3D: number;
+    y3D: number;
+    z3D: number;
+  }
+
   export interface Hand {
     handedness: 'Left' | 'Right';
     confidence: number;
     keypoints: HandKeypoint[];
     keypoints3D: HandKeypoint3D[];
+    wrist: NamedHandKeypoint;
+    thumb_tip: NamedHandKeypoint;
+    index_finger_tip: NamedHandKeypoint;
+    middle_finger_mcp: NamedHandKeypoint;
   }
 
   export interface HandPoseOptions {
