@@ -9,6 +9,9 @@ const FONT = '10px ui-monospace, Menlo, monospace';
 const CROSSHAIR_SIZE = 7;
 const BOX_PADDING = 18;
 const LABEL_INSET = 8;
+const SCALE_INSET = 24;
+const SCALE_MIN_PIXELS = 60;
+const SCALE_STEPS = [1, 2, 5, 10, 20, 50, 100];
 
 /** Tracking overlay, drawn as if the mirrored camera image filled the screen. */
 export class HUD {
@@ -30,9 +33,11 @@ export class HUD {
     this.video = video;
   }
 
-  draw(scan: ScanRect, stage: string): void {
+  /** `label` names what's in the window, `pxPerCm` is the plant's scale on screen. */
+  draw(scan: ScanRect, label: string, pxPerCm: number): void {
     this.prepareCanvas();
-    this.drawScanFrame(scan, stage);
+    this.drawScanFrame(scan, label);
+    this.drawScaleBar(pxPerCm);
 
     const hand = this.hands[0];
     if (!hand) return;
@@ -62,7 +67,23 @@ export class HUD {
     context.lineWidth = 1;
   }
 
-  private drawScanFrame({ x, y, size }: ScanRect, stage: string): void {
+  private drawScaleBar(pxPerCm: number): void {
+    const { context, canvas } = this;
+    const centimetres = SCALE_STEPS.find((step) => step * pxPerCm >= SCALE_MIN_PIXELS) ?? 100;
+    const length = Math.round(centimetres * pxPerCm);
+    const x = SCALE_INSET;
+    const y = canvas.clientHeight - SCALE_INSET;
+
+    context.beginPath();
+    context.moveTo(x + 0.5, y - 5);
+    context.lineTo(x + 0.5, y + 0.5);
+    context.lineTo(x + length + 0.5, y + 0.5);
+    context.lineTo(x + length + 0.5, y - 5);
+    context.stroke();
+    context.fillText(`${centimetres} cm`, x, y - 10);
+  }
+
+  private drawScanFrame({ x, y, size }: ScanRect, label: string): void {
     const { context } = this;
     const right = x + size;
     const bottom = y + size;
@@ -74,7 +95,7 @@ export class HUD {
     }
 
     context.textAlign = 'left';
-    context.fillText(`object.${stage}`, x + LABEL_INSET, y + LABEL_INSET + 8);
+    context.fillText(`object.${label}`, x + LABEL_INSET, y + LABEL_INSET + 8);
     context.textAlign = 'right';
     context.fillText('not.xray', right - LABEL_INSET, bottom - LABEL_INSET);
     context.fillText(`${x.toFixed(2)},${y.toFixed(2)}`, right, y - LABEL_INSET);

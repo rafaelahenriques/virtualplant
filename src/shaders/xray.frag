@@ -2,6 +2,8 @@ uniform vec3 uColor;
 uniform float uIntensity;
 // Number of veins across the blade, or 0 for none.
 uniform float uVeins;
+// Below 1, dissolves the plant into scattered dots.
+uniform float uReveal;
 
 varying vec3 vNormal;
 varying vec3 vViewPosition;
@@ -9,7 +11,13 @@ varying vec2 vUv;
 
 const float PI = 3.141592653589793;
 
+float stipple() {
+  return fract(sin(dot(floor(gl_FragCoord.xy / 2.0), vec2(12.9898, 78.233))) * 43758.5453);
+}
+
 void main() {
+  if (stipple() > uReveal) discard;
+
   vec3 normal = normalize(vNormal);
   vec3 view = normalize(vViewPosition);
 

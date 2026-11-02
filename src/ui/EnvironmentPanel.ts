@@ -1,11 +1,12 @@
 import GUI from 'lil-gui';
-import type { EnvironmentState } from '../ecosystem/Environment';
+import { CLIMATE_FACTORS, FACTOR_KEYS } from '../ecosystem/Environment';
+import { CLIMATE_PRESETS } from '../ecosystem/presets';
 import type { EcosystemStore } from '../store/ecosystemStore';
 import type { HandTracker } from '../tracking/HandTracker';
 
-/** Development controls for tweaking the ecosystem and checking hand tracking. */
+/** Development controls for the climate, growth and hand tracking. */
 export function createEnvironmentPanel(store: EcosystemStore, tracker: HandTracker): GUI {
-  const gui = new GUI({ title: 'Environment' });
+  const gui = new GUI({ title: 'Ecosystem' });
 
   const growth = {
     get target() {
@@ -14,15 +15,60 @@ export function createEnvironmentPanel(store: EcosystemStore, tracker: HandTrack
     set target(value: number) {
       store.getState().setGrowthTarget(value);
     },
+    get animation() {
+      return store.getState().animationOn;
+    },
+    set animation(on: boolean) {
+      store.getState().setAnimationOn(on);
+    },
   };
-  gui.add(growth, 'target', 0, 1, 0.01).name('growth').decimals(2).listen();
+  gui.add(growth, 'target', 0, 1, 0.01).name('Growth').decimals(2).listen();
+  gui.add(growth, 'animation').name('Animation').listen();
 
-  const values = { ...store.getState().environment };
-  for (const key of Object.keys(values) as (keyof EnvironmentState)[]) {
-    gui
-      .add(values, key, 0, 1, 0.01)
-      .onChange((value: number) => store.getState().setEnvironment({ [key]: value }));
+  const climate = gui.addFolder('Climate');
+  const places = {
+    place: '',
+  };
+  const names = Object.fromEntries(CLIMATE_PRESETS.map((preset) => [preset.name, preset.name]));
+  climate
+    .add(places, 'place', names)
+    .name('Real place')
+    .onChange((name: string) => {
+      const preset = CLIMATE_PRESETS.find((candidate) => candidate.name === name);
+      if (preset) store.getState().setEnvironment(preset.environment);
+    });
+
+  for (const key of FACTOR_KEYS) {
+    const { label, unit, min, max, step } = CLIMATE_FACTORS[key];
+    const binding = {
+      get value() {
+        return store.getState().environment[key];
+      },
+      set value(value: number) {
+        store.getState().setEnvironment({ [key]: value });
+      },
+    };
+    climate.add(binding, 'value', min, max, step).name(`${label} (${unit})`).listen();
   }
+
+  const match = {
+    get species() {
+      const best = store.getState().ranking[0];
+      return best && best.score > 0 ? best.species.commonName : 'No viable species';
+    },
+    get score() {
+      const best = store.getState().ranking[0];
+      return best ? `${Math.round(best.score * 100)}%` : '0%';
+    },
+    get limitedBy() {
+      const best = store.getState().ranking[0];
+      return best ? CLIMATE_FACTORS[best.limitingFactor].label : '';
+    },
+  };
+  const result = gui.addFolder('Best match');
+  result.add(match, 'species').name('Species').disable().listen();
+  result.add(match, 'score').name('Match').disable().listen();
+  result.add(match, 'limitedBy').name('Limited by').disable().listen();
 
   addHandTrackingControls(gui, tracker);
   return gui;

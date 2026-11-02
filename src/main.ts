@@ -1,9 +1,10 @@
 import { AnimationLoop } from './core/AnimationLoop';
-import { createCamera } from './core/Camera';
+import { createCamera, frameSubject, pixelsPerCentimetre } from './core/Camera';
 import { createRenderer, fitToContainer, renderInRect } from './core/Renderer';
-import { BACKGROUND, createScene, SCAN_BACKGROUND } from './core/Scene';
+import { BACKGROUND, createScene } from './core/Scene';
 import { ScanWindow } from './core/ScanWindow';
-import { Plant } from './plants/Plant';
+import { PlantManager } from './ecosystem/PlantManager';
+import { SPECIES } from './plants/species';
 import { ecosystemStore } from './store/ecosystemStore';
 import { applyGestures } from './tracking/GestureMapper';
 import { HandTracker } from './tracking/HandTracker';
@@ -21,10 +22,15 @@ const camera = createCamera(app.clientWidth / app.clientHeight);
 const renderer = createRenderer(app);
 fitToContainer(app, renderer, camera);
 
-const { growthTarget, scanTarget } = ecosystemStore.getState();
-const plant = new Plant(growthTarget);
-scene.add(plant.object);
+const { growthTarget, scanTarget, speciesId } = ecosystemStore.getState();
+const plants = new PlantManager(scene, SPECIES, growthTarget);
+plants.show(speciesId);
+ecosystemStore.subscribe(({ speciesId: next }) => plants.show(next));
 const scan = new ScanWindow(scanTarget);
+
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  ecosystemStore.getState().setAnimationOn(false);
+}
 
 const tracker = new HandTracker();
 const hud = new HUD(app);
@@ -35,19 +41,25 @@ createEnvironmentPanel(ecosystemStore, tracker);
 
 const loop = new AnimationLoop(renderer);
 loop.add((frame) => {
-  const { environment, growthTarget, scanTarget } = ecosystemStore.getState();
-  plant.update(frame, environment.wind, growthTarget);
+  const { animationOn, growthTarget, scanTarget } = ecosystemStore.getState();
+  plants.update(frame, growthTarget, animationOn);
   scan.update(scanTarget, frame.delta);
   const scanRect = scan.rect(viewport());
+  const view = plants.view;
+  frameSubject(camera, view);
 
-  plant.setLook('xray');
+  plants.setLook('xray');
   scene.background = BACKGROUND;
   renderer.render(scene, camera);
 
-  plant.setLook('specimen');
-  scene.background = SCAN_BACKGROUND;
+  plants.setLook('specimen');
+  scene.background = plants.windowColor;
   renderInRect(renderer, scene, camera, scanRect);
 
-  hud.draw(scanRect, plant.stage);
+  hud.draw(
+    scanRect,
+    `${plants.speciesId}.${plants.stage}`,
+    pixelsPerCentimetre(camera, viewport().height, view.span),
+  );
 });
 loop.start();
