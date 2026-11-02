@@ -4,6 +4,8 @@ A living 3D environment where hand gestures influence plant growth and environme
 
 The procedural plant generator and growth simulation are the technical centrepiece. Hand tracking is how you interact with them.
 
+**Live:** [rafaelahenriques.github.io/virtualplant](https://rafaelahenriques.github.io/virtualplant/). Each push to `main` deploys there through GitHub Pages.
+
 **Status:** early, see the [roadmap](#roadmap). The climate decides which of eight real species grows, you pinch to move it through its growth stages, and you move your palm to scan it in colour.
 
 ## Climate decides the plant
