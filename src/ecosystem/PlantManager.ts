@@ -11,6 +11,9 @@ const MOTION_RATE = 3;
 const EMPTY_WINDOW = new Color(0x15171a);
 const EMPTY_VIEW = { center: 30, span: 60 };
 
+// Keeps transitions on time when frames are slow, rather than stretching them out.
+gsap.ticker.lagSmoothing(0);
+
 /** Holds one built plant per species and keeps the one the climate supports on show. */
 export class PlantManager {
   private readonly plants = new Map<string, Plant>();
@@ -32,12 +35,9 @@ export class PlantManager {
     }
   }
 
-  get stage(): string {
-    return this.active?.stage ?? 'none';
-  }
-
-  get speciesId(): string {
-    return this.active?.species.id ?? 'none';
+  /** What the scan window's label calls the plant in view, such as `lotus.bud`. */
+  get label(): string {
+    return this.active ? `${this.active.species.id}.${this.active.stage}` : 'none';
   }
 
   get windowColor(): Color {
