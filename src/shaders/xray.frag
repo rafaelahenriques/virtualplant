@@ -29,6 +29,7 @@ void main() {
   veins *= 1.0 - 0.6 * vUv.y;
 
   float intensity = 0.05 + 0.5 * density + 0.1 * rim + 0.3 * veins;
-  gl_FragColor = vec4(uColor * intensity * uIntensity, 1.0);
+  // This pass renders in linear light, so faint tissue needs lowering to stay translucent.
+  gl_FragColor = vec4(uColor * pow(intensity * uIntensity, 1.7), 1.0);
   #include <colorspace_fragment>
 }
