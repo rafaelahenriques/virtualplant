@@ -44,6 +44,115 @@ body {
   pointer-events: none;
 }
 
+/* Loading: real work reported on the right, a flower resolving from blocks to dots above it. */
+.boot {
+  position: fixed;
+  inset: 0;
+  background: var(--void);
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.boot-flower {
+  position: absolute;
+  top: var(--focus-y);
+  left: 50%;
+  width: min(62vh, 78vw);
+  height: min(62vh, 78vw);
+  transform: translate(-50%, -50%);
+}
+
+.boot-status {
+  position: absolute;
+  left: calc(var(--gutter) + 26px);
+  bottom: calc(var(--gutter) + 22px);
+}
+
+.boot-percent {
+  margin: 0;
+  font-size: clamp(64px, 11vw, 148px);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  text-shadow: 0 0 34px rgb(238 241 236 / 22%);
+}
+
+.boot-step {
+  margin: 12px 0 0;
+  color: var(--ash);
+}
+
+.boot-log {
+  position: absolute;
+  right: calc(var(--gutter) + 26px);
+  bottom: calc(var(--gutter) + 22px);
+  width: min(430px, calc(100vw - 2 * var(--gutter) - 52px));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ash);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.boot-log li {
+  display: grid;
+  grid-template-columns: 5ch minmax(0, 1fr) auto;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.boot-log li > span:nth-child(2) {
+  overflow: hidden;
+  color: var(--bone);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.boot-log li > span:nth-child(3) {
+  max-width: 26ch;
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.boot-log li[data-pending='true'] > span:nth-child(3) {
+  color: var(--bone);
+}
+
+.boot-error {
+  position: absolute;
+  left: calc(var(--gutter) + 26px);
+  bottom: calc(var(--gutter) + 22px);
+  max-width: 44ch;
+  margin: 0;
+  background: var(--void);
+  font-size: clamp(20px, 2.4vw, 30px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.boot-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--bone);
+  box-shadow:
+    0 0 14px 2px var(--glow),
+    0 0 60px 8px rgb(238 241 236 / 18%);
+  opacity: 0;
+}
+
+/* Hidden until loading finishes. */
+.interface[data-booting='true'] {
+  opacity: 0;
+  visibility: hidden;
+}
+
 /* Instrument frame, from the crosshair and rings to the viewport corners. */
 .frame {
   position: fixed;
@@ -480,6 +589,25 @@ button {
 @media (max-width: 760px) {
   body {
     font-size: 14px;
+  }
+
+  .boot-status {
+    left: 16px;
+    bottom: auto;
+    top: calc(34% + 39vw + 12px);
+  }
+
+  .boot-log {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: auto;
+  }
+
+  .boot-error {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
   }
 
   .corner {

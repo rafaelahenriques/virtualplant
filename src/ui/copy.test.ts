@@ -7,6 +7,7 @@ import {
   describeMatch,
   describeNoMatch,
   describeOthers,
+  describeStartupError,
   describeTrackingError,
   formatFactor,
 } from './copy';
@@ -70,6 +71,16 @@ describe('describeOthers', () => {
 
   it('is empty when nothing else can grow', () => {
     expect(describeOthers(rankSpecies(SPECIES, aswan))).toBe('');
+  });
+});
+
+describe('describeStartupError', () => {
+  it('points to a browser that can run it when WebGL is missing', () => {
+    expect(describeStartupError(new Error('Error creating WebGL context.'))).toContain('WebGL 2');
+  });
+
+  it('suggests reloading otherwise', () => {
+    expect(describeStartupError(new Error('other'))).toContain('Reload');
   });
 });
 

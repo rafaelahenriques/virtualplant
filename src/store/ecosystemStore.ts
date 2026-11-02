@@ -9,7 +9,7 @@ import { rankSpecies, type Assessment } from '../ecosystem/Suitability';
 import type { Species } from '../plants/form';
 import { SPECIES } from '../plants/species';
 
-export const DEFAULT_GROWTH = 0.5;
+export const DEFAULT_GROWTH = 0.78;
 export const DEFAULT_SCAN_TARGET: Point = { x: 0.5, y: 0.34 };
 
 export interface EcosystemState {

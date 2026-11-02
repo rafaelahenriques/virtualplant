@@ -90,11 +90,11 @@ export class Plant {
     return this.uniforms.uReveal;
   }
 
-  /** Vertices drawn at full bloom, counting every instance. */
-  get vertexCount(): number {
+  /** Triangles drawn at full bloom, counting every instance. */
+  get triangleCount(): number {
     return this.parts.reduce((total, { mesh }) => {
       const instances = 'instanceCount' in mesh.geometry ? Number(mesh.geometry.instanceCount) : 1;
-      return total + (mesh.geometry.index?.count ?? 0) * instances;
+      return total + ((mesh.geometry.index?.count ?? 0) / 3) * instances;
     }, 0);
   }
 
