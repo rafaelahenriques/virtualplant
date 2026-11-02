@@ -1,5 +1,6 @@
 import {
   HalfFloatType,
+  NearestFilter,
   ShaderMaterial,
   WebGLRenderTarget,
   type Camera,
@@ -40,8 +41,10 @@ export class PersistentRenderPass extends Pass {
     this.camera = camera;
     const options = { type: HalfFloatType, depthBuffer: false };
     this.drawn = new WebGLRenderTarget(1, 1, { ...options, samples: ANTIALIAS_SAMPLES });
-    this.history = new WebGLRenderTarget(1, 1, options);
-    this.next = new WebGLRenderTarget(1, 1, options);
+    // Read one texel at a time, so a history pixel can never leak into its neighbours.
+    const historyOptions = { ...options, minFilter: NearestFilter, magFilter: NearestFilter };
+    this.history = new WebGLRenderTarget(1, 1, historyOptions);
+    this.next = new WebGLRenderTarget(1, 1, historyOptions);
   }
 
   override setSize(width: number, height: number): void {
