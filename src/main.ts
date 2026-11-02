@@ -112,7 +112,7 @@ async function main(boot: BootScreen): Promise<void> {
 
   const loop = new AnimationLoop(renderer);
   loop.add((frame) => {
-    const { animationOn, growthTarget, scanTarget } = ecosystemStore.getState();
+    const { animationOn, growthTarget, interfaceVisible, scanTarget } = ecosystemStore.getState();
     plants.update(frame, growthTarget, animationOn);
     scan.update(scanTarget, frame.delta);
     const scanRect = scan.rect(viewport());
@@ -127,7 +127,12 @@ async function main(boot: BootScreen): Promise<void> {
     scene.background = plants.windowColor;
     renderInRect(renderer, scene, camera, scanRect);
 
-    hud.draw(scanRect, plants.label, pixelsPerCentimetre(camera, viewport().height, view.span));
+    hud.draw(
+      scanRect,
+      plants.label,
+      pixelsPerCentimetre(camera, viewport().height, view.span),
+      interfaceVisible,
+    );
   });
   loop.start();
 

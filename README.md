@@ -122,7 +122,7 @@ src/
 
 Shaders are imported as strings with Vite's `?raw` suffix, for example `import leafVertex from '../shaders/leaf.vert?raw'`.
 
-The visual direction is plants as x-ray specimens under machine observation: translucent, veined tissue glowing on grainy near-black, thin tracking overlays and monospace readouts. The interface stays monochrome, so colour only ever appears inside the scan window. Each climate slider draws the current plant's limits and best range on its track.
+The visual direction is plants as x-ray specimens under machine observation: translucent, veined tissue glowing on grainy near-black, thin tracking overlays and monospace readouts. The interface stays monochrome, so colour only ever appears inside the scan window. Each climate slider draws the current plant's limits and best range on its track. **Hide interface** clears the text and controls, leaving the plant and its scan window.
 
 The camera is only used on your device. Video frames go to the hand model in your browser and are never sent anywhere.
 

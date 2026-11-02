@@ -82,4 +82,11 @@ describe('ecosystemStore', () => {
     store.getState().setAnimationOn(false);
     expect(store.getState().animationOn).toBe(false);
   });
+
+  it('hides and shows the interface', () => {
+    const store = createEcosystemStore();
+    expect(store.getState().interfaceVisible).toBe(true);
+    store.getState().setInterfaceVisible(false);
+    expect(store.getState().interfaceVisible).toBe(false);
+  });
 });

@@ -153,6 +153,33 @@ body {
   visibility: hidden;
 }
 
+/* With the interface hidden, only the plant and the button that brings it back remain. */
+.interface::before,
+.wordmark,
+.tracking-status,
+.specimen,
+.climate,
+.bar-actions > * {
+  transition:
+    opacity 300ms,
+    visibility 300ms;
+}
+
+.interface[data-hidden='true'] {
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.interface[data-hidden='true']::before,
+.interface[data-hidden='true'] .wordmark,
+.interface[data-hidden='true'] .tracking-status,
+.interface[data-hidden='true'] .specimen,
+.interface[data-hidden='true'] .climate,
+.interface[data-hidden='true'] .bar-actions > :not(#interface-toggle) {
+  opacity: 0;
+  visibility: hidden;
+}
+
 /* Instrument frame, from the crosshair and rings to the viewport corners. */
 .frame {
   position: fixed;
@@ -294,8 +321,10 @@ body {
 
 .bar-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 18px;
+  justify-content: flex-end;
+  gap: 4px 18px;
 }
 
 button {
