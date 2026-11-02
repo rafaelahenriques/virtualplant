@@ -1,11 +1,7 @@
 import type { Hand, HandPose } from 'ml5';
+import type { Size } from '../core/math';
 
-export interface VideoSize {
-  width: number;
-  height: number;
-}
-
-export type HandsListener = (hands: Hand[], video: VideoSize) => void;
+export type HandsListener = (hands: Hand[], video: Size) => void;
 
 /** Owns the webcam and ml5 HandPose. ml5 is about 4 MB, so it only loads on the first start. */
 export class HandTracker {
@@ -50,7 +46,7 @@ export class HandTracker {
     this.emit([], { width: 0, height: 0 });
   }
 
-  private emit(hands: Hand[], video: VideoSize): void {
+  private emit(hands: Hand[], video: Size): void {
     for (const listener of this.listeners) listener(hands, video);
   }
 }

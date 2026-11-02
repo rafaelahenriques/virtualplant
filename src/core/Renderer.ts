@@ -1,4 +1,5 @@
-import { WebGLRenderer, type PerspectiveCamera } from 'three';
+import { WebGLRenderer, type PerspectiveCamera, type Scene } from 'three';
+import type { ScanRect } from './ScanWindow';
 
 const MAX_PIXEL_RATIO = 2;
 
@@ -8,6 +9,21 @@ export function createRenderer(container: HTMLElement): WebGLRenderer {
   renderer.setSize(container.clientWidth, container.clientHeight);
   container.appendChild(renderer.domElement);
   return renderer;
+}
+
+/** Renders over what is already on screen, but only inside the given square. */
+export function renderInRect(
+  renderer: WebGLRenderer,
+  scene: Scene,
+  camera: PerspectiveCamera,
+  rect: ScanRect,
+): void {
+  // The scissor is measured from the bottom left.
+  const bottom = renderer.domElement.clientHeight - rect.y - rect.size;
+  renderer.setScissor(rect.x, bottom, rect.size, rect.size);
+  renderer.setScissorTest(true);
+  renderer.render(scene, camera);
+  renderer.setScissorTest(false);
 }
 
 export function fitToContainer(

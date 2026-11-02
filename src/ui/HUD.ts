@@ -1,21 +1,21 @@
 import type { Hand } from 'ml5';
+import type { Point, Size } from '../core/math';
+import type { ScanRect } from '../core/ScanWindow';
 import { recognizePinch } from '../tracking/GestureRecognizer';
-import type { VideoSize } from '../tracking/HandTracker';
+import { videoToViewport } from '../tracking/videoSpace';
 
 const INK = '#f2f5f0';
 const FONT = '10px ui-monospace, Menlo, monospace';
 const CROSSHAIR_SIZE = 7;
 const BOX_PADDING = 18;
-
-interface Point {
-  x: number;
-  y: number;
-}
+const LABEL_INSET = 8;
 
 /** Tracking overlay, drawn as if the mirrored camera image filled the screen. */
 export class HUD {
   private readonly canvas = document.createElement('canvas');
   private readonly context: CanvasRenderingContext2D;
+  private hands: Hand[] = [];
+  private video: Size = { width: 0, height: 0 };
 
   constructor(container: HTMLElement) {
     const context = this.canvas.getContext('2d');
@@ -25,32 +25,60 @@ export class HUD {
     container.appendChild(this.canvas);
   }
 
-  draw(hands: Hand[], video: VideoSize): void {
-    const { canvas, context } = this;
-    const { clientWidth: width, clientHeight: height } = canvas;
-    const pixelRatio = window.devicePixelRatio;
+  setHands(hands: Hand[], video: Size): void {
+    this.hands = hands;
+    this.video = video;
+  }
 
-    // Resizing also clears the canvas and resets its state.
-    canvas.width = width * pixelRatio;
-    canvas.height = height * pixelRatio;
+  draw(scan: ScanRect, stage: string): void {
+    this.prepareCanvas();
+    this.drawScanFrame(scan, stage);
 
-    const hand = hands[0];
+    const hand = this.hands[0];
     if (!hand) return;
 
-    context.scale(pixelRatio, pixelRatio);
+    const viewport = { width: this.canvas.clientWidth, height: this.canvas.clientHeight };
+    const toScreen = (point: Point) => videoToViewport(point, this.video, viewport);
+    this.drawHandBox(hand, toScreen);
+    this.drawPinch(hand, toScreen(hand.thumb_tip), toScreen(hand.index_finger_tip));
+  }
+
+  private prepareCanvas(): void {
+    const { canvas, context } = this;
+    const pixelRatio = window.devicePixelRatio;
+    const width = canvas.clientWidth * pixelRatio;
+    const height = canvas.clientHeight * pixelRatio;
+
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    context.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     context.strokeStyle = INK;
     context.fillStyle = INK;
     context.font = FONT;
     context.lineWidth = 1;
+  }
 
-    const scale = Math.max(width / video.width, height / video.height);
-    const toScreen = ({ x, y }: Point): Point => ({
-      x: width / 2 + (x - video.width / 2) * scale,
-      y: height / 2 + (y - video.height / 2) * scale,
-    });
+  private drawScanFrame({ x, y, size }: ScanRect, stage: string): void {
+    const { context } = this;
+    const right = x + size;
+    const bottom = y + size;
 
-    this.drawHandBox(hand, toScreen);
-    this.drawPinch(hand, toScreen(hand.thumb_tip), toScreen(hand.index_finger_tip));
+    // The half pixel keeps 1px lines crisp.
+    context.strokeRect(x + 0.5, y + 0.5, size - 1, size - 1);
+    for (const cornerX of [x, right]) {
+      for (const cornerY of [y, bottom]) this.drawCrosshair({ x: cornerX, y: cornerY });
+    }
+
+    context.textAlign = 'left';
+    context.fillText(`object.${stage}`, x + LABEL_INSET, y + LABEL_INSET + 8);
+    context.textAlign = 'right';
+    context.fillText('not.xray', right - LABEL_INSET, bottom - LABEL_INSET);
+    context.fillText(`${x.toFixed(2)},${y.toFixed(2)}`, right, y - LABEL_INSET);
+    context.textAlign = 'left';
   }
 
   private drawHandBox(hand: Hand, toScreen: (point: Point) => Point): void {

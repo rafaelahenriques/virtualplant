@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { stepGrowth } from './GrowthSystem';
+import { describeGrowth, stepGrowth } from './GrowthSystem';
+
+describe('describeGrowth', () => {
+  it('names each stage from seedling to bloom', () => {
+    expect([0, 0.3, 0.55, 0.8, 1].map(describeGrowth)).toEqual([
+      'seedling',
+      'shoot',
+      'bud',
+      'opening',
+      'bloom',
+    ]);
+  });
+});
 
 describe('stepGrowth', () => {
   it('grows towards a higher target without overshooting', () => {

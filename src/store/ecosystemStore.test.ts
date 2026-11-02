@@ -27,4 +27,10 @@ describe('ecosystemStore', () => {
     store.getState().setGrowthTarget(-3);
     expect(store.getState().growthTarget).toBe(0);
   });
+
+  it('clamps the scan target to the viewport', () => {
+    const store = createEcosystemStore();
+    store.getState().setScanTarget({ x: 1.4, y: -0.2 });
+    expect(store.getState().scanTarget).toEqual({ x: 1, y: 0 });
+  });
 });

@@ -5,3 +5,11 @@ const EVOLVE_RATE = 2.5;
 export function stepGrowth(growth: number, target: number, delta: number): number {
   return target + (growth - target) * Math.exp(-EVOLVE_RATE * delta);
 }
+
+export function describeGrowth(growth: number): string {
+  if (growth < 0.15) return 'seedling';
+  if (growth < 0.42) return 'shoot';
+  if (growth < 0.65) return 'bud';
+  if (growth < 0.92) return 'opening';
+  return 'bloom';
+}

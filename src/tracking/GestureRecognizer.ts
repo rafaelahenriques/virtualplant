@@ -1,5 +1,5 @@
 import type { Hand, NamedHandKeypoint } from 'ml5';
-import { clamp01 } from '../core/math';
+import { clamp01, type Point } from '../core/math';
 
 // Thumb-to-index distance as a multiple of palm length.
 const PINCHED_RATIO = 0.25;
@@ -24,6 +24,14 @@ export function recognizePinch(hand: Hand): Pinch {
   return {
     ratio,
     openness: clamp01((ratio - PINCHED_RATIO) / (SPREAD_RATIO - PINCHED_RATIO)),
+  };
+}
+
+/** The centre of the palm in video pixels, which stays put while the fingers pinch. */
+export function palmCenter(hand: Hand): Point {
+  return {
+    x: (hand.wrist.x + hand.middle_finger_mcp.x) / 2,
+    y: (hand.wrist.y + hand.middle_finger_mcp.y) / 2,
   };
 }
 

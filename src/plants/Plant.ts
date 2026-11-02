@@ -13,15 +13,15 @@ import {
   ShaderMaterial,
   TubeGeometry,
   Vector3,
-  type IUniform,
 } from 'three';
 import type { Frame } from '../core/AnimationLoop';
 import leafVertex from '../shaders/leaf.vert?raw';
 import petalVertex from '../shaders/petal.vert?raw';
+import specimenFragment from '../shaders/specimen.frag?raw';
 import stemVertex from '../shaders/stem.vert?raw';
 import xrayFragment from '../shaders/xray.frag?raw';
 import { createFlowerGeometry } from './Flower';
-import { stepGrowth } from './GrowthSystem';
+import { describeGrowth, stepGrowth } from './GrowthSystem';
 
 const STEM_SEGMENTS = 64;
 const STEM_RADIAL_SEGMENTS = 8;
@@ -34,8 +34,27 @@ const SEEDLING_HEIGHT = 0.2;
 const STEM_COMPLETE_AT = 0.4;
 const LEAF_UNFURL_SPAN = 0.14;
 
-const TISSUE_COLOR = 0xa9c4d6;
-const PETAL_COLOR = 0xdce8f0;
+const STEM_TISSUE: Tissue = { xray: 0xa9c4d6, base: 0x5f9c78, tip: 0x5f9c78, veins: 0, glow: 1 };
+const LEAF_TISSUE: Tissue = { xray: 0xa9c4d6, base: 0x2f7a5f, tip: 0x8fcf9f, veins: 6, glow: 1 };
+// Dimmer on the x-ray because dozens of petals overlap.
+const PETAL_TISSUE: Tissue = {
+  xray: 0xdce8f0,
+  base: 0xd81e62,
+  tip: 0xffb3c6,
+  veins: 7,
+  glow: 0.45,
+};
+
+/** The x-ray view of the plant, or its true colours inside the scan window. */
+export type Look = 'xray' | 'specimen';
+
+interface Tissue {
+  xray: number;
+  base: number;
+  tip: number;
+  veins: number;
+  glow: number;
+}
 
 interface Leaf {
   mesh: Mesh;
@@ -55,6 +74,7 @@ export class Plant {
   };
   private readonly stem: TubeGeometry;
   private readonly leaves: Leaf[] = [];
+  private readonly parts: { mesh: Mesh; materials: Record<Look, ShaderMaterial> }[] = [];
   private growth: number;
 
   constructor(growth: number) {
@@ -68,9 +88,11 @@ export class Plant {
     ]);
 
     this.stem = new TubeGeometry(curve, STEM_SEGMENTS, 0.02, STEM_RADIAL_SEGMENTS);
-    this.object.add(new Mesh(this.stem, this.createMaterial(stemVertex, TISSUE_COLOR, 0, 1)));
+    const stem = new Mesh(this.stem);
+    this.parts.push({ mesh: stem, materials: this.createMaterials(stemVertex, STEM_TISSUE) });
+    this.object.add(stem);
 
-    const leafMaterial = this.createMaterial(leafVertex, TISSUE_COLOR, 6, 1);
+    const leafMaterials = this.createMaterials(leafVertex, LEAF_TISSUE);
     const leafGeometry = createLeafGeometry();
     for (let i = 0; i < LEAF_COUNT; i++) {
       // The first two are the seedling's leaves, so the plant is never bare.
@@ -78,7 +100,7 @@ export class Plant {
       const progress = i / (LEAF_COUNT - 1);
       const along = isSeedLeaf ? SEEDLING_HEIGHT * 0.9 : 0.18 + 0.6 * progress;
       const leaf: Leaf = {
-        mesh: new Mesh(leafGeometry, leafMaterial),
+        mesh: new Mesh(leafGeometry),
         birth: isSeedLeaf
           ? -LEAF_UNFURL_SPAN
           : ((along - SEEDLING_HEIGHT) / (1 - SEEDLING_HEIGHT)) * STEM_COMPLETE_AT,
@@ -89,14 +111,12 @@ export class Plant {
       leaf.mesh.rotation.order = 'YXZ';
       leaf.mesh.rotation.y = isSeedLeaf ? 0.5 + i * Math.PI : i * GOLDEN_ANGLE;
       this.leaves.push(leaf);
+      this.parts.push({ mesh: leaf.mesh, materials: leafMaterials });
       this.object.add(leaf.mesh);
     }
 
-    const flower = new Mesh(
-      createFlowerGeometry(),
-      // Dimmer than the rest because dozens of petals overlap.
-      this.createMaterial(petalVertex, PETAL_COLOR, 7, 0.45),
-    );
+    const flower = new Mesh(createFlowerGeometry());
+    this.parts.push({ mesh: flower, materials: this.createMaterials(petalVertex, PETAL_TISSUE) });
     // Petal positions come from the shader, so the geometry's bounds mean nothing.
     flower.frustumCulled = false;
     flower.position.copy(curve.getPointAt(1));
@@ -104,7 +124,12 @@ export class Plant {
     flower.rotation.x = 0.8;
     this.object.add(flower);
 
+    this.setLook('xray');
     this.applyGrowth();
+  }
+
+  get stage(): string {
+    return describeGrowth(this.growth);
   }
 
   update(frame: Frame, wind: number, growthTarget: number): void {
@@ -112,6 +137,10 @@ export class Plant {
     this.uniforms.uTime.value = frame.elapsed;
     this.uniforms.uWind.value = wind;
     this.applyGrowth();
+  }
+
+  setLook(look: Look): void {
+    for (const { mesh, materials } of this.parts) mesh.material = materials[look];
   }
 
   private applyGrowth(): void {
@@ -134,31 +163,38 @@ export class Plant {
     }
   }
 
-  private createMaterial(
-    vertexShader: string,
-    color: number,
-    veins: number,
-    intensity: number,
-  ): ShaderMaterial {
-    const uniforms: Record<string, IUniform> = {
-      ...this.uniforms,
-      uColor: { value: new Color(color) },
-      uIntensity: { value: intensity },
-      uVeins: { value: veins },
+  private createMaterials(vertexShader: string, tissue: Tissue): Record<Look, ShaderMaterial> {
+    return {
+      xray: new ShaderMaterial({
+        vertexShader,
+        fragmentShader: xrayFragment,
+        uniforms: {
+          ...this.uniforms,
+          uColor: { value: new Color(tissue.xray) },
+          uIntensity: { value: tissue.glow },
+          uVeins: { value: tissue.veins },
+        },
+        side: DoubleSide,
+        transparent: true,
+        depthWrite: false,
+        // Screen blending: overlapping tissue gets brighter, as on an x-ray, but keeps its
+        // detail instead of clipping to solid white.
+        blending: CustomBlending,
+        blendSrc: OneMinusDstColorFactor,
+        blendDst: OneFactor,
+      }),
+      specimen: new ShaderMaterial({
+        vertexShader,
+        fragmentShader: specimenFragment,
+        uniforms: {
+          ...this.uniforms,
+          uBaseColor: { value: new Color(tissue.base) },
+          uTipColor: { value: new Color(tissue.tip) },
+          uVeins: { value: tissue.veins },
+        },
+        side: DoubleSide,
+      }),
     };
-    return new ShaderMaterial({
-      vertexShader,
-      fragmentShader: xrayFragment,
-      uniforms,
-      side: DoubleSide,
-      transparent: true,
-      depthWrite: false,
-      // Screen blending: overlapping tissue gets brighter, as on an x-ray, but keeps its
-      // detail instead of clipping to solid white.
-      blending: CustomBlending,
-      blendSrc: OneMinusDstColorFactor,
-      blendDst: OneFactor,
-    });
   }
 }
 
