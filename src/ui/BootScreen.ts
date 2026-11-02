@@ -45,11 +45,20 @@ export class BootScreen {
     // Lets the line paint before a task that might hold the main thread.
     await new Promise(requestAnimationFrame);
 
-    const result = await task();
+    const showResult = (text: string) => {
+      row.dataset.pending = 'false';
+      (row.lastElementChild as HTMLElement).textContent = text;
+    };
+    let result: string;
+    try {
+      result = await task();
+    } catch (error) {
+      showResult('Failed');
+      throw error;
+    }
 
     const elapsed = performance.now() - startedAt;
-    row.dataset.pending = 'false';
-    (row.lastElementChild as HTMLElement).textContent = result;
+    showResult(result);
     this.completed += weight;
     this.target = this.completed / this.totalWeight;
     if (elapsed < MIN_STEP_MS && !this.reducedMotion) await sleep(MIN_STEP_MS - elapsed);
