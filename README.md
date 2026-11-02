@@ -52,7 +52,7 @@ The overlay shows the live reading. If `grow` can't reach 0 or 1 on your hand, a
 
 Outside the scan window the plant is an x-ray. Inside it, the same plant at the same growth stage renders as a solid flower in colour. The window follows the centre of your palm, which stays still while your fingers pinch, so one hand controls growth and position at once. With no hand in view, it stays where it is.
 
-The scene is drawn twice each frame: the x-ray across the whole screen, then the colour look clipped to the window with a scissor test.
+The scene is drawn twice each frame: the x-ray across the whole screen, then the colour look clipped to the window with a scissor test. The x-ray is drawn at a lower resolution, and each frame is blended into the ones before it, so thin tissue doesn't flicker as it sways from one pixel to the next.
 
 ## Loading
 
@@ -106,13 +106,14 @@ Each file arrives with the phase that needs it, so nothing in `src/` is an empty
 
 ```text
 src/
-├── core/       Scene, Camera, Renderer, AnimationLoop, ScanWindow, math
+├── core/       Scene, Camera, Renderer, PersistentRenderPass, AnimationLoop, ScanWindow, math
 ├── tracking/   HandTracker, GestureRecognizer, GestureMapper, videoSpace
 ├── ecosystem/  Environment, Suitability, presets, PlantManager
 │               Simulation (phase 6), Ecosystem (phase 7)
 ├── plants/     Plant, GrowthSystem, form, geometry
 │   └── species/  One file per species: climate ranges, sources and form
-├── shaders/    stem.vert, leaf.vert, petal.vert, xray.frag, specimen.frag
+├── shaders/    stem.vert, leaf.vert, petal.vert, xray.frag, specimen.frag,
+│               fullscreen.vert, persistence.frag
 ├── ui/         BootScreen, BootFlower, EnvironmentPanel, SpeciesPanel, GrowthScale, Toolbar, HUD, copy
 ├── store/      ecosystemStore
 ├── types/      Declarations for untyped packages

@@ -107,6 +107,11 @@ describe('sunflower', () => {
     expect(outer.start).toBeLessThan(inner.start);
   });
 
+  it('holds its disc florets still, packed into the head', () => {
+    const head = form.heads.find(({ blades: parts }) => parts.some((b) => b.role === 'floret'));
+    expect(head?.rigid).toBe(true);
+  });
+
   it('has a stem of 100 to 300 cm and leaves of 10 to 40 cm', () => {
     const height = form.stems[0]!.curve.getPointAt(1).y;
     expect(height).toBeGreaterThanOrEqual(100);
