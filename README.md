@@ -56,6 +56,10 @@ Outside the scan window the plant is an x-ray. Inside it, the same plant at the 
 
 The scene is drawn twice each frame: the x-ray across the whole screen, then the colour look clipped to the window with a scissor test. The x-ray is drawn at a lower resolution, and each frame is blended into the ones before it, so thin tissue doesn't flicker as it sways from one pixel to the next.
 
+## Music
+
+**Music** plays [Vestige](https://www.epidemicsound.com/music/tracks/76375f7e-89d9-45ed-8c45-1ba5741e11cd/) by Lennon Hutton on a loop, fading in and out. It stays off until you press the button, and nothing downloads until then.
+
 ## Loading
 
 The loading screen reports real work as it happens: your graphics hardware, the triangles built for each species, the shaders compiled, whether a camera is present, and the hand model downloading. The numbers on it are measured, and each line stays up long enough to read. The camera stays off throughout.
@@ -117,6 +121,7 @@ src/
 ├── shaders/    stem.vert, leaf.vert, petal.vert, xray.frag, specimen.frag,
 │               fullscreen.vert, persistence.frag
 ├── ui/         BootScreen, BootFlower, EnvironmentPanel, SpeciesPanel, GrowthScale, Toolbar, HUD, copy
+├── audio/      MusicPlayer and the track
 ├── store/      ecosystemStore
 ├── types/      Declarations for untyped packages
 └── main.ts
@@ -147,4 +152,4 @@ This project uses GitHub Flow. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-[MIT](LICENSE)
+The code is [MIT](LICENSE). The music is not: "Vestige" by Lennon Hutton is licensed from Epidemic Sound, so `src/audio/vestige.m4a` can't be reused from this repository.
