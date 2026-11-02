@@ -41,8 +41,9 @@ void main() {
   }
   color *= 1.0 - 0.14 * veins * (1.0 - vUv.y);
 
-  // Thin tissue seen edge-on catches the light.
-  float rim = pow(1.0 - dot(normal, view), 3.0);
+  // Thin tissue seen edge-on catches the light. Rounding can put the dot product just above 1,
+  // and a power of a negative number is NaN.
+  float rim = pow(max(0.0, 1.0 - dot(normal, view)), 3.0);
 
   gl_FragColor = vec4(color * light + rim * 0.12, 1.0);
   #include <colorspace_fragment>
