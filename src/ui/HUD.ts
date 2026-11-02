@@ -34,11 +34,17 @@ export class HUD {
     this.video = video;
   }
 
-  /** `label` names what's in the window, `pxPerCm` is the plant's scale on screen. */
-  draw(scan: ScanRect, label: string, pxPerCm: number): void {
+  /**
+   * `label` names what's in the window, `pxPerCm` is the plant's scale on screen, and `showText`
+   * is false when the interface is hidden, which leaves just the scan window's frame.
+   */
+  draw(scan: ScanRect, label: string, pxPerCm: number, showText: boolean): void {
     this.prepareCanvas();
-    this.drawScanFrame(scan, label);
-    this.drawScaleBar(pxPerCm);
+    this.drawScanFrame(scan);
+    if (showText) {
+      this.drawScanLabels(scan, label);
+      this.drawScaleBar(pxPerCm);
+    }
 
     const hand = this.hands[0];
     if (!hand) return;
@@ -88,16 +94,20 @@ export class HUD {
     context.fillText(`${centimetres} cm`, x, y - 10);
   }
 
-  private drawScanFrame({ x, y, size }: ScanRect, label: string): void {
+  private drawScanFrame({ x, y, size }: ScanRect): void {
     const { context } = this;
-    const right = x + size;
-    const bottom = y + size;
 
     // The half pixel keeps 1px lines crisp.
     context.strokeRect(x + 0.5, y + 0.5, size - 1, size - 1);
-    for (const cornerX of [x, right]) {
-      for (const cornerY of [y, bottom]) this.drawCrosshair({ x: cornerX, y: cornerY });
+    for (const cornerX of [x, x + size]) {
+      for (const cornerY of [y, y + size]) this.drawCrosshair({ x: cornerX, y: cornerY });
     }
+  }
+
+  private drawScanLabels({ x, y, size }: ScanRect, label: string): void {
+    const { context } = this;
+    const right = x + size;
+    const bottom = y + size;
 
     context.textAlign = 'left';
     context.fillText(`object.${label}`, x + LABEL_INSET, y + LABEL_INSET + 8);

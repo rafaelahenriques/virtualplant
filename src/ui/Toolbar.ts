@@ -7,11 +7,23 @@ const IDLE_HINT = 'Grow it with your fingers, or drag Growth.';
 const SEARCHING = 'Hold a hand up to the camera.';
 const TRACKING_HINT = 'Spread your thumb and index finger to grow. Move your palm to scan.';
 
-/** The animation switch and the camera button with its status line. */
+/** The interface and animation switches, and the camera button with its status line. */
 export function createToolbar(store: EcosystemStore, tracker: HandTracker): void {
+  const ui = required('interface');
+  const hide = required<HTMLButtonElement>('interface-toggle');
   const animation = required<HTMLButtonElement>('animation-toggle');
   const camera = required<HTMLButtonElement>('tracking-toggle');
   const status = required('tracking-status');
+
+  const renderInterface = (visible: boolean) => {
+    ui.dataset.hidden = String(!visible);
+    hide.textContent = visible ? 'Hide interface' : 'Show interface';
+  };
+  hide.addEventListener('click', () => {
+    store.getState().setInterfaceVisible(!store.getState().interfaceVisible);
+  });
+  store.subscribe((state) => renderInterface(state.interfaceVisible));
+  renderInterface(store.getState().interfaceVisible);
 
   const renderAnimation = (on: boolean) => {
     animation.setAttribute('aria-pressed', String(on));

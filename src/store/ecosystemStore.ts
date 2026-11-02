@@ -27,6 +27,8 @@ export interface EcosystemState {
   /** Where the scan window is heading, as fractions of the viewport from the top left. */
   scanTarget: Point;
   animationOn: boolean;
+  /** False leaves only the plant, its scan window and the button to bring the interface back. */
+  interfaceVisible: boolean;
   /** Sets a climate and shows its best match, as when choosing a place. */
   setEnvironment: (patch: Partial<EnvironmentState>) => void;
   /** Changes a climate gradually, as with a slider, without swapping plants needlessly. */
@@ -34,6 +36,7 @@ export interface EcosystemState {
   setGrowthTarget: (target: number) => void;
   setScanTarget: (target: Point) => void;
   setAnimationOn: (on: boolean) => void;
+  setInterfaceVisible: (visible: boolean) => void;
 }
 
 function matchFor(environment: EnvironmentState, onShow?: string) {
@@ -57,6 +60,7 @@ export function createEcosystemStore() {
     growthTarget: DEFAULT_GROWTH,
     scanTarget: DEFAULT_SCAN_TARGET,
     animationOn: true,
+    interfaceVisible: true,
     setEnvironment: (patch) =>
       set(({ environment }) => matchFor(clampEnvironment({ ...environment, ...patch }))),
     adjustEnvironment: (patch) =>
@@ -66,6 +70,7 @@ export function createEcosystemStore() {
     setGrowthTarget: (target) => set({ growthTarget: clamp01(target) }),
     setScanTarget: ({ x, y }) => set({ scanTarget: { x: clamp01(x), y: clamp01(y) } }),
     setAnimationOn: (on) => set({ animationOn: on }),
+    setInterfaceVisible: (visible) => set({ interfaceVisible: visible }),
   }));
 }
 
