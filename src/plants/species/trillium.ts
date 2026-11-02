@@ -15,7 +15,6 @@ export const trillium: Species = {
   id: 'trillium',
   commonName: 'White trillium',
   scientificName: 'Trillium grandiflorum',
-  family: 'Melanthiaceae',
   habitat: 'Moist, shaded floors of eastern North American forests',
   height: '20 to 45 cm',
   flower: 'Everything in threes: 3 bracts, 3 sepals, 3 white petals',

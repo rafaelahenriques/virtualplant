@@ -12,6 +12,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /** Reports real startup work: every line is a task running, with its measured result. */
 export class BootScreen {
   private readonly root = required('boot');
+  private readonly progress = required('boot-progress');
   private readonly percent = required('boot-percent');
   private readonly stepLabel = required('boot-step');
   private readonly log = required('boot-log');
@@ -23,7 +24,7 @@ export class BootScreen {
   private target = 0;
   private shown = 0;
   private completed = 0;
-  private totalWeight = 1;
+  private totalSteps = 1;
   private animating = true;
 
   constructor() {
@@ -33,12 +34,12 @@ export class BootScreen {
   }
 
   /** How much work is coming, so progress can be measured against it. */
-  plan(totalWeight: number): void {
-    this.totalWeight = totalWeight;
+  plan(totalSteps: number): void {
+    this.totalSteps = totalSteps;
   }
 
   /** Runs one task, logging what it is and then what it found. */
-  async step(label: string, task: () => string | Promise<string>, weight = 1): Promise<void> {
+  async step(label: string, task: () => string | Promise<string>): Promise<void> {
     const startedAt = performance.now();
     const row = this.addRow(label);
     this.stepLabel.textContent = label;
@@ -59,8 +60,8 @@ export class BootScreen {
 
     const elapsed = performance.now() - startedAt;
     showResult(result);
-    this.completed += weight;
-    this.target = this.completed / this.totalWeight;
+    this.completed += 1;
+    this.target = this.completed / this.totalSteps;
     if (elapsed < MIN_STEP_MS && !this.reducedMotion) await sleep(MIN_STEP_MS - elapsed);
   }
 
@@ -140,7 +141,7 @@ export class BootScreen {
 
     const value = Math.round(this.shown * 100);
     this.percent.textContent = String(value).padStart(3, '0');
-    this.root.setAttribute('aria-valuenow', String(value));
+    this.progress.setAttribute('aria-valuenow', String(value));
     this.flower.draw(this.shown);
 
     requestAnimationFrame(this.animate);

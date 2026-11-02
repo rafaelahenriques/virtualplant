@@ -11,7 +11,7 @@ export interface EnvironmentState {
 
 export type ClimateFactor = keyof EnvironmentState;
 
-export interface FactorInfo {
+interface FactorInfo {
   label: string;
   unit: string;
   min: number;

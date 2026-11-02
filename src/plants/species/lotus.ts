@@ -31,7 +31,6 @@ export const lotus: Species = {
   id: 'lotus',
   commonName: 'Sacred lotus',
   scientificName: 'Nelumbo nucifera',
-  family: 'Nelumbonaceae',
   habitat: 'Warm, still water in ponds and wetlands of Asia',
   height: '90 to 180 cm above the water',
   flower: 'Many tepals around a flat-topped seed pod, round leaves held at the centre',

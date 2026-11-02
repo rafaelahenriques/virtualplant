@@ -25,6 +25,8 @@ export class PersistentRenderPass extends Pass {
   private readonly drawn: WebGLRenderTarget;
   private history: WebGLRenderTarget;
   private next: WebGLRenderTarget;
+  /** Resizing empties the history, and blending with nothing would dim the frame. */
+  private historyEmpty = true;
   private readonly material = new ShaderMaterial({
     uniforms: { tCurrent: { value: null }, tPrevious: { value: null }, uKeep: { value: 0 } },
     vertexShader: fullscreenVertex,
@@ -49,6 +51,7 @@ export class PersistentRenderPass extends Pass {
 
   override setSize(width: number, height: number): void {
     for (const target of [this.drawn, this.history, this.next]) target.setSize(width, height);
+    this.historyEmpty = true;
   }
 
   override render(
@@ -63,7 +66,8 @@ export class PersistentRenderPass extends Pass {
     const { uniforms } = this.material;
     uniforms.tCurrent!.value = this.drawn.texture;
     uniforms.tPrevious!.value = this.history.texture;
-    uniforms.uKeep!.value = Math.exp(-delta / PERSISTENCE_SECONDS);
+    uniforms.uKeep!.value = this.historyEmpty ? 0 : Math.exp(-delta / PERSISTENCE_SECONDS);
+    this.historyEmpty = false;
 
     // The glow pass draws onto the read buffer, so the history needs a copy of its own.
     for (const target of [this.next, readBuffer]) {

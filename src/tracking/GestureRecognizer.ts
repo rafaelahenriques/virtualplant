@@ -5,7 +5,7 @@ import { clamp01, type Point } from '../core/math';
 const PINCHED_RATIO = 0.25;
 const SPREAD_RATIO = 1.25;
 
-export interface Pinch {
+interface Pinch {
   /** Thumb-to-index distance divided by palm length. */
   ratio: number;
   /** 0 when the fingers touch, 1 when they are fully spread. */

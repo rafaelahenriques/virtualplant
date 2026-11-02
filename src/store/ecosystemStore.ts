@@ -16,7 +16,7 @@ export const DEFAULT_SCAN_TARGET: Point = { x: 0.5, y: 0.34 };
 // would keep swapping between plants that fit about equally well.
 const KEEP_PLANT_MARGIN = 0.1;
 
-export interface EcosystemState {
+interface EcosystemState {
   environment: EnvironmentState;
   /** Every species for this climate: the one on show first, then best match first. */
   ranking: Assessment<Species>[];

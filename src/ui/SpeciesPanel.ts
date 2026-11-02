@@ -42,11 +42,8 @@ export function createSpeciesPanel(store: EcosystemStore): void {
     }
   };
 
-  let environment = store.getState().environment;
-  store.subscribe((state) => {
-    if (state.environment === environment) return;
-    environment = state.environment;
-    render();
+  store.subscribe((state, previous) => {
+    if (state.environment !== previous.environment) render();
   });
   render();
 }

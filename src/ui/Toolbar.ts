@@ -8,6 +8,12 @@ const MUSIC_FAILED = 'The music could not play. Check your connection, then try 
 const IDLE_HINT = 'Grow it with your fingers, or drag Growth.';
 const SEARCHING = 'Hold a hand up to the camera.';
 const TRACKING_HINT = 'Spread your thumb and index finger to grow. Move your palm to scan.';
+const CAMERA_LOST = 'The camera stopped. Start hand tracking to carry on.';
+
+function renderSwitch(button: HTMLElement, name: string, on: boolean): void {
+  button.dataset.on = String(on);
+  button.textContent = `${name} ${on ? 'on' : 'off'}`;
+}
 
 /** The interface, animation and music switches, and the camera button with its status line. */
 export function createToolbar(
@@ -26,26 +32,13 @@ export function createToolbar(
     ui.dataset.hidden = String(!visible);
     hide.textContent = visible ? 'Hide interface' : 'Show interface';
   };
+
   hide.addEventListener('click', () => {
     store.getState().setInterfaceVisible(!store.getState().interfaceVisible);
   });
-  store.subscribe((state) => renderInterface(state.interfaceVisible));
-  renderInterface(store.getState().interfaceVisible);
-
-  const renderAnimation = (on: boolean) => {
-    animation.setAttribute('aria-pressed', String(on));
-    animation.textContent = on ? 'Animation on' : 'Animation off';
-  };
   animation.addEventListener('click', () => {
     store.getState().setAnimationOn(!store.getState().animationOn);
   });
-  store.subscribe((state) => renderAnimation(state.animationOn));
-  renderAnimation(store.getState().animationOn);
-
-  const renderMusic = (on: boolean) => {
-    music.setAttribute('aria-pressed', String(on));
-    music.textContent = on ? 'Music on' : 'Music off';
-  };
   music.addEventListener('click', async () => {
     const on = !store.getState().musicOn;
     store.getState().setMusicOn(on);
@@ -62,13 +55,33 @@ export function createToolbar(
       status.textContent = MUSIC_FAILED;
     }
   });
-  store.subscribe((state) => renderMusic(state.musicOn));
+
+  store.subscribe((state, previous) => {
+    if (state.interfaceVisible !== previous.interfaceVisible) {
+      renderInterface(state.interfaceVisible);
+    }
+    if (state.animationOn !== previous.animationOn) {
+      renderSwitch(animation, 'Animation', state.animationOn);
+    }
+    if (state.musicOn !== previous.musicOn) renderSwitch(music, 'Music', state.musicOn);
+  });
+  const initial = store.getState();
+  renderInterface(initial.interfaceVisible);
+  renderSwitch(animation, 'Animation', initial.animationOn);
+  renderSwitch(music, 'Music', initial.musicOn);
 
   let tracking = false;
   let handInView = false;
 
-  tracker.subscribe((hands) => {
+  tracker.subscribe((hands, video) => {
     if (!tracking) return;
+    // The tracker stopped by itself, because the camera went away.
+    if (video.width === 0) {
+      tracking = false;
+      camera.textContent = 'Start hand tracking';
+      status.textContent = CAMERA_LOST;
+      return;
+    }
     const inView = hands.length > 0;
     if (inView === handInView) return;
     handInView = inView;
