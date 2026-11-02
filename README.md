@@ -4,7 +4,30 @@ A living 3D environment where hand gestures influence plant growth and environme
 
 The procedural plant generator and growth simulation are the technical centrepiece. Hand tracking is how you interact with them.
 
-**Status:** early, see the [roadmap](#roadmap). You can pinch to move a placeholder plant through its growth stages and move your palm to scan it in colour. Its leaves respond to the wind setting in the development panel.
+**Status:** early, see the [roadmap](#roadmap). The climate decides which of eight real species grows, you pinch to move it through its growth stages, and you move your palm to scan it in colour.
+
+## Climate decides the plant
+
+Four real-world measurements decide which species grows: temperature during the growing season (°C), relative humidity (%), rainfall (mm per year) and direct sun during the growing season (hours per day).
+
+Each species has a minimum, an optimal range and a maximum for every factor. A factor scores 1 inside the optimal range, 0 outside the limits, and falls in a straight line between. The plant's score is its **worst** factor, because a plant does only as well as its limiting condition allows. This is the limiting-factor approach used by [FAO's EcoCrop model](https://gaez.fao.org/pages/ecocrop). The highest score wins, and if every species scores 0 then nothing grows and the interface names the limiting factor.
+
+| Climate             | Species                                                 | Temperature | Humidity | Rainfall     | Sun        |
+| ------------------- | ------------------------------------------------------- | ----------- | -------- | ------------ | ---------- |
+| Hot desert          | Engelmann's hedgehog cactus, _Echinocereus engelmannii_ | 20 to 34    | 15 to 45 | 150 to 350   | 9 to 13    |
+| Mediterranean       | True lavender, _Lavandula angustifolia_                 | 15 to 24    | 35 to 60 | 500 to 1000  | 6 to 12    |
+| Grassland           | Common sunflower, _Helianthus annuus_                   | 17 to 34    | 35 to 70 | 600 to 1000  | 7 to 14    |
+| Temperate           | Chinese peony, _Paeonia lactiflora_                     | 12 to 22    | 45 to 75 | 600 to 1200  | 5 to 10    |
+| Forest floor        | White trillium, _Trillium grandiflorum_                 | 10 to 20    | 60 to 90 | 900 to 1800  | 0.5 to 3   |
+| Tropical understory | Moth orchid, _Phalaenopsis amabilis_                    | 22 to 29    | 60 to 80 | 2000 to 4500 | 0.5 to 2.5 |
+| Warm wetland        | Sacred lotus, _Nelumbo nucifera_                        | 25 to 30    | 55 to 90 | 2000 to 2800 | 6 to 13    |
+| Arctic tundra       | Arctic poppy, _Papaver radicatum_                       | 2 to 11     | 65 to 90 | 150 to 400   | 4 to 12    |
+
+The table shows optimal ranges only. Each species file in `src/plants/species/` holds the full ranges and its sources, such as FAO EcoCrop, Flora of North America, the American Orchid Society and NASA, and marks each factor as published or derived. Derived means the sources describe the habitat rather than give a number, so the range is worked out from that habitat's climate. Treat those as informed estimates.
+
+Each plant is also built to its published description, in real centimetres: a trillium has three bracts, three sepals and three petals, an arctic poppy has four petals and drops its two sepals as it opens, and a sunflower's disc florets sit on the golden angle and open from the rim inwards. The tests in `src/plants/species/species.test.ts` check these counts and sizes, and `src/ecosystem/Suitability.test.ts` checks that real places, from Tucson to Svalbard, get the species they are known for.
+
+Plants of the same species all look the same for now. Variation between individuals comes with the procedural generator in phase 2.
 
 ## Pinch to grow
 
@@ -12,10 +35,14 @@ Growth changes the plant's form, not its size. Spreading your thumb and index fi
 
 | Growth     | Stage                                                  |
 | ---------- | ------------------------------------------------------ |
-| 0          | Seedling with two seed leaves                          |
+| 0          | Seedling or shoot                                      |
 | 0 to 0.4   | The stem extends and new leaves unfurl                 |
 | 0.4 to 0.6 | Sepals and the first petals form a closed bud          |
 | 0.6 to 1   | Rings of petals form and open, then the stamens appear |
+
+Each species follows this in its own way: a poppy bud nods then lifts as it opens, and an orchid opens its lowest flower first.
+
+The camera follows the growth, starting close on the seedling and settling on the flower, so the plant's real proportions stay intact. A scale bar shows how large it really is.
 
 No model training is involved. ml5 HandPose is already trained and returns 21 landmarks per hand, and a pinch is the distance between two of them, divided by palm length so it reads the same near or far from the camera. With no hand in view, the plant holds its current stage.
 
@@ -75,12 +102,11 @@ Each file arrives with the phase that needs it, so nothing in `src/` is an empty
 src/
 ├── core/       Scene, Camera, Renderer, AnimationLoop, ScanWindow, math
 ├── tracking/   HandTracker, GestureRecognizer, GestureMapper, videoSpace
-├── ecosystem/  Environment
-│               Simulation (phase 6), Ecosystem, PlantManager (phase 7)
-├── plants/     Plant (placeholder), Flower, GrowthSystem
-│               PlantGenerator, Stem, Branch, Leaf (phase 2)
+├── ecosystem/  Environment, Suitability, presets, PlantManager
+│               Simulation (phase 6), Ecosystem (phase 7)
+├── plants/     Plant, GrowthSystem, form, geometry
+│   └── species/  One file per species: climate ranges, sources and form
 ├── shaders/    stem.vert, leaf.vert, petal.vert, xray.frag, specimen.frag
-│               wind.vert (phase 8)
 ├── ui/         EnvironmentPanel, HUD
 ├── store/      ecosystemStore
 ├── types/      Declarations for untyped packages
@@ -96,11 +122,11 @@ The visual direction is plants as x-ray specimens under machine observation: tra
 | Phase | Deliverable                                   | Status  |
 | ----- | --------------------------------------------- | ------- |
 | 1     | Three.js environment with one static 3D plant | Done    |
-| 2     | Procedural plant generation                   | Planned |
-| 3     | Animated plant growth                         | Started |
+| 2     | Procedural plant generation                   | Started |
+| 3     | Animated plant growth                         | Done    |
 | 4     | ml5.js hand tracking                          | Done    |
 | 5     | Gesture recognition and interaction           | Started |
-| 6     | Environmental simulation                      | Planned |
+| 6     | Environmental simulation                      | Started |
 | 7     | Multiple plants and ecosystem behaviour       | Planned |
 | 8     | Custom shaders, lighting and visual polish    | Planned |
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_ENVIRONMENT } from '../ecosystem/Environment';
+import { CLIMATE_FACTORS, DEFAULT_ENVIRONMENT } from '../ecosystem/Environment';
 import { createEcosystemStore } from './ecosystemStore';
 
 describe('ecosystemStore', () => {
@@ -9,15 +9,27 @@ describe('ecosystemStore', () => {
 
   it('merges a patch without touching other values', () => {
     const store = createEcosystemStore();
-    store.getState().setEnvironment({ wind: 0.9 });
-    expect(store.getState().environment).toEqual({ ...DEFAULT_ENVIRONMENT, wind: 0.9 });
+    store.getState().setEnvironment({ rainfall: 1200 });
+    expect(store.getState().environment).toEqual({ ...DEFAULT_ENVIRONMENT, rainfall: 1200 });
   });
 
-  it('clamps values to 0..1', () => {
+  it('clamps values to their real-world ranges', () => {
     const store = createEcosystemStore();
-    store.getState().setEnvironment({ wind: 4, rainfall: -1 });
-    expect(store.getState().environment.wind).toBe(1);
-    expect(store.getState().environment.rainfall).toBe(0);
+    store.getState().setEnvironment({ humidity: 400, temperature: -80 });
+    expect(store.getState().environment.humidity).toBe(CLIMATE_FACTORS.humidity.max);
+    expect(store.getState().environment.temperature).toBe(CLIMATE_FACTORS.temperature.min);
+  });
+
+  it('picks a new species when the climate changes', () => {
+    const store = createEcosystemStore();
+    store.getState().setEnvironment({ temperature: 27, humidity: 80, rainfall: 3800, sunlight: 2 });
+    expect(store.getState().speciesId).toBe('orchid');
+  });
+
+  it('shows nothing where nothing can survive', () => {
+    const store = createEcosystemStore();
+    store.getState().setEnvironment({ temperature: 33, humidity: 20, rainfall: 0, sunlight: 11 });
+    expect(store.getState().speciesId).toBeNull();
   });
 
   it('clamps the growth target to 0..1', () => {
@@ -32,5 +44,12 @@ describe('ecosystemStore', () => {
     const store = createEcosystemStore();
     store.getState().setScanTarget({ x: 1.4, y: -0.2 });
     expect(store.getState().scanTarget).toEqual({ x: 1, y: 0 });
+  });
+
+  it('turns animation on and off', () => {
+    const store = createEcosystemStore();
+    expect(store.getState().animationOn).toBe(true);
+    store.getState().setAnimationOn(false);
+    expect(store.getState().animationOn).toBe(false);
   });
 });
