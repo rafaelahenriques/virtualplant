@@ -9,8 +9,9 @@ const FONT = '10px ui-monospace, Menlo, monospace';
 const CROSSHAIR_SIZE = 7;
 const BOX_PADDING = 18;
 const LABEL_INSET = 8;
-const SCALE_INSET = 24;
+const SCALE_INSET = 40;
 const SCALE_MIN_PIXELS = 60;
+const SCALE_MIN_VIEWPORT = 760;
 const SCALE_STEPS = [1, 2, 5, 10, 20, 50, 100];
 
 /** Tracking overlay, drawn as if the mirrored camera image filled the screen. */
@@ -69,9 +70,13 @@ export class HUD {
 
   private drawScaleBar(pxPerCm: number): void {
     const { context, canvas } = this;
+    // On a phone the controls fill the lower half of the screen.
+    if (canvas.clientWidth < SCALE_MIN_VIEWPORT) return;
+
     const centimetres = SCALE_STEPS.find((step) => step * pxPerCm >= SCALE_MIN_PIXELS) ?? 100;
     const length = Math.round(centimetres * pxPerCm);
-    const x = SCALE_INSET;
+    // Centred on the screen's vertical axis, clear of the text in the lower corners.
+    const x = Math.round((canvas.clientWidth - length) / 2);
     const y = canvas.clientHeight - SCALE_INSET;
 
     context.beginPath();

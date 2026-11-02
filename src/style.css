@@ -1,3 +1,20 @@
+:root {
+  --void: #08090b;
+  --bone: #eef1ec;
+  --ash: #9aa09f;
+  --line: rgb(238 241 236 / 16%);
+  --line-strong: rgb(238 241 236 / 42%);
+  --glass: rgb(238 241 236 / 7%);
+  --glow: rgb(238 241 236 / 55%);
+
+  --sans: 'Schibsted Grotesk Variable', 'Helvetica Neue', Arial, sans-serif;
+  --serif: 'Instrument Serif', 'Times New Roman', serif;
+
+  --gutter: clamp(16px, 3vw, 40px);
+  /* Where the flower sits in the frame, and where the scan window starts. */
+  --focus-y: 34%;
+}
+
 html,
 body,
 #app {
@@ -6,11 +23,16 @@ body,
 }
 
 body {
-  background: #08090b;
+  background: var(--void);
+  color: var(--bone);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.45;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-canvas {
+#app canvas {
   display: block;
 }
 
@@ -20,4 +42,509 @@ canvas {
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+/* Instrument frame, from the crosshair and rings to the viewport corners. */
+.frame {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.axis {
+  position: absolute;
+  background: var(--line);
+}
+
+.axis-across {
+  top: var(--focus-y);
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.axis-down {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+}
+
+.orbits {
+  position: absolute;
+  top: var(--focus-y);
+  left: 50%;
+  width: min(92vh, 92vw);
+  height: min(92vh, 92vw);
+  transform: translate(-50%, -50%);
+  overflow: visible;
+}
+
+.orbits circle {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.corner {
+  --size: 18px;
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  border: 0 solid var(--line-strong);
+}
+
+.corner-tl {
+  top: var(--gutter);
+  left: var(--gutter);
+  border-width: 1px 0 0 1px;
+}
+
+.corner-tr {
+  top: var(--gutter);
+  right: var(--gutter);
+  border-width: 1px 1px 0 0;
+}
+
+.corner-bl {
+  bottom: var(--gutter);
+  left: var(--gutter);
+  border-width: 0 0 1px 1px;
+}
+
+.corner-br {
+  bottom: var(--gutter);
+  right: var(--gutter);
+  border-width: 0 1px 1px 0;
+}
+
+/* Film grain over everything, so the plant and the interface share one surface. */
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 -.25'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Layout: the plant fills the screen, the type sits in its lower left, the climate on the right. */
+.interface {
+  position: fixed;
+  inset: var(--gutter);
+  padding: 22px 26px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 310px);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 24px 48px;
+  pointer-events: none;
+}
+
+.interface::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(to top, rgb(8 9 11 / 88%), transparent 46%),
+    linear-gradient(to left, rgb(8 9 11 / 78%), transparent 32%);
+}
+
+.interface a,
+.interface button,
+.interface input,
+.interface select,
+.interface summary {
+  pointer-events: auto;
+}
+
+:focus-visible {
+  outline: 1px solid var(--bone);
+  outline-offset: 3px;
+}
+
+/* Top bar */
+.bar {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 24px;
+  align-items: center;
+}
+
+.wordmark {
+  margin: 0;
+  padding: 2px 14px;
+  width: fit-content;
+  border-inline: 1px solid var(--line-strong);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.quiet {
+  padding: 8px 2px;
+  border: 0;
+  background: none;
+  color: var(--ash);
+}
+
+.quiet:hover,
+.quiet[aria-pressed='true'] {
+  color: var(--bone);
+}
+
+.glass {
+  padding: 8px 16px;
+  border: 1px solid var(--line-strong);
+  background: linear-gradient(to bottom, rgb(238 241 236 / 16%), var(--glass));
+  backdrop-filter: blur(6px);
+  transition: border-color 120ms;
+}
+
+.glass:hover {
+  border-color: var(--bone);
+}
+
+.glass:disabled {
+  color: var(--ash);
+  cursor: progress;
+}
+
+.tracking-status {
+  grid-column: 2;
+  justify-self: end;
+  max-width: 44ch;
+  margin: 0;
+  color: var(--ash);
+  font-size: 13px;
+  text-align: right;
+}
+
+/* The plant's name is the headline. */
+.specimen {
+  align-self: end;
+  min-width: 0;
+  max-width: 620px;
+}
+
+.species-name {
+  margin: 0;
+  font-size: clamp(38px, 6.4vw, 84px);
+  font-weight: 500;
+  line-height: 0.96;
+  letter-spacing: -0.045em;
+  text-shadow: 0 0 34px rgb(238 241 236 / 22%);
+}
+
+.species-latin {
+  margin: 8px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(21px, 2.3vw, 30px);
+  font-style: italic;
+  line-height: 1.15;
+}
+
+.species-note {
+  margin: 14px 0 0;
+  max-width: 52ch;
+  color: var(--ash);
+}
+
+.species-match {
+  margin: 10px 0 0;
+  max-width: 52ch;
+}
+
+.species-others {
+  margin: 4px 0 0;
+  max-width: 52ch;
+  color: var(--ash);
+  font-size: 13px;
+}
+
+.species-others:empty {
+  display: none;
+}
+
+.sources {
+  margin-top: 6px;
+  color: var(--ash);
+  font-size: 13px;
+}
+
+.sources summary {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.sources summary:hover {
+  color: var(--bone);
+}
+
+.sources ul {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sources a {
+  color: var(--bone);
+  text-underline-offset: 3px;
+}
+
+/* Growth: a hairline scale marked with the stages it passes through. */
+.growth {
+  margin-top: 20px;
+  max-width: 460px;
+}
+
+.growth-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ash);
+  font-size: 13px;
+}
+
+.growth-stages {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ash);
+  font-size: 13px;
+}
+
+.growth-stages [aria-current='true'] {
+  color: var(--bone);
+}
+
+/* Sliders: a real range input over a track that shows the plant's tolerance. */
+.scale {
+  --thumb: 11px;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  background: linear-gradient(var(--line), var(--line)) center / 100% 1px no-repeat;
+  cursor: pointer;
+}
+
+.scale::-webkit-slider-runnable-track {
+  height: 22px;
+  background: none;
+}
+
+.scale::-moz-range-track {
+  height: 22px;
+  background: none;
+}
+
+.scale::-webkit-slider-thumb {
+  appearance: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((22px - var(--thumb)) / 2);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 45%, var(--bone));
+  box-shadow:
+    0 0 10px 2px var(--glow),
+    0 0 26px 6px rgb(238 241 236 / 22%);
+}
+
+.scale::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 45%, var(--bone));
+  box-shadow:
+    0 0 10px 2px var(--glow),
+    0 0 26px 6px rgb(238 241 236 / 22%);
+}
+
+/* Climate */
+.climate {
+  align-self: end;
+  min-width: 0;
+}
+
+.place {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 14px;
+  color: var(--ash);
+  font-size: 13px;
+}
+
+.place select {
+  appearance: none;
+  width: 100%;
+  padding: 7px 26px 7px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line-strong);
+  border-radius: 0;
+  background: none;
+  color: var(--bone);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.place select option {
+  background: var(--void);
+}
+
+.factor {
+  padding: 12px 0 10px;
+  border-top: 1px solid var(--line);
+}
+
+.factor-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.factor-head label {
+  color: var(--ash);
+}
+
+.factor-value {
+  font-size: 24px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.factor-track {
+  position: relative;
+}
+
+/* The plant's limits, then its best range, drawn behind the input. */
+.factor-track::before,
+.factor-track::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  pointer-events: none;
+  transition:
+    left 300ms,
+    width 300ms;
+}
+
+.factor-track::before {
+  left: var(--limit-start, 0%);
+  width: var(--limit-width, 0%);
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.factor-track::after {
+  left: var(--best-start, 0%);
+  width: var(--best-width, 0%);
+  height: 3px;
+  margin-top: -1px;
+  background: var(--bone);
+  box-shadow: 0 0 10px var(--glow);
+}
+
+.factor-note {
+  min-height: 1.45em;
+  margin: 2px 0 0;
+  color: var(--ash);
+  font-size: 13px;
+}
+
+.factor[data-limiting='true'] .factor-note {
+  color: var(--bone);
+}
+
+/* On a phone the plant keeps the top half, and the controls scroll beneath it. */
+@media (max-width: 760px) {
+  body {
+    font-size: 14px;
+  }
+
+  .corner {
+    display: none;
+  }
+
+  .interface {
+    inset: 0;
+    padding: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 10px;
+    overflow-y: auto;
+    pointer-events: auto;
+  }
+
+  .interface::before {
+    background: linear-gradient(to top, rgb(8 9 11 / 96%) 45%, transparent 72%);
+  }
+
+  .bar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bar-actions {
+    justify-content: space-between;
+  }
+
+  .tracking-status {
+    grid-column: 1;
+    justify-self: start;
+    text-align: left;
+  }
+
+  .specimen {
+    margin-top: 40vh;
+    max-width: none;
+  }
+
+  .climate {
+    align-self: start;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+  .species-note,
+  .species-others {
+    display: none;
+  }
+
+  .factor {
+    padding: 8px 0 6px;
+  }
+
+  .factor-note {
+    display: none;
+  }
+
+  .growth {
+    margin-top: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
 }

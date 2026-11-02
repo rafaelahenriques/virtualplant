@@ -3,12 +3,74 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#08090b" />
+    <meta
+      name="description"
+      content="Set a real climate and grow the plant that could live there, using your hands."
+    />
     <link rel="icon" href="data:," />
     <title>Generative Ecosystem</title>
-    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <div id="app"></div>
+
+    <div class="frame" aria-hidden="true">
+      <span class="axis axis-across"></span>
+      <span class="axis axis-down"></span>
+      <svg class="orbits" viewBox="-100 -100 200 200">
+        <circle r="46" />
+        <circle r="68" />
+        <circle r="94" />
+      </svg>
+      <span class="corner corner-tl"></span>
+      <span class="corner corner-tr"></span>
+      <span class="corner corner-bl"></span>
+      <span class="corner corner-br"></span>
+    </div>
+
+    <main class="interface">
+      <header class="bar">
+        <p class="wordmark">Generative Ecosystem</p>
+        <div class="bar-actions">
+          <button id="animation-toggle" class="quiet" type="button" aria-pressed="true">
+            Animation on
+          </button>
+          <button id="tracking-toggle" class="glass" type="button">Start hand tracking</button>
+        </div>
+        <p id="tracking-status" class="tracking-status" role="status">
+          Grow it with your fingers, or drag Growth.
+        </p>
+      </header>
+
+      <section class="specimen" aria-labelledby="species-name">
+        <h1 id="species-name" class="species-name"></h1>
+        <p id="species-latin" class="species-latin"></p>
+        <p id="species-note" class="species-note"></p>
+        <p id="species-match" class="species-match"></p>
+        <p id="species-others" class="species-others"></p>
+        <details class="sources">
+          <summary>Sources</summary>
+          <ul id="species-sources"></ul>
+        </details>
+
+        <div class="growth">
+          <label class="growth-label" for="growth">Growth</label>
+          <input id="growth" class="scale" type="range" min="0" max="1" step="0.01" />
+          <ol id="growth-stages" class="growth-stages"></ol>
+        </div>
+      </section>
+
+      <section class="climate" aria-label="Climate">
+        <div class="place">
+          <label for="place">Use a real place</label>
+          <select id="place"></select>
+        </div>
+        <div id="climate-factors"></div>
+      </section>
+    </main>
+
+    <div class="grain" aria-hidden="true"></div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
