@@ -1,5 +1,5 @@
 import gsap from 'gsap';
-import { Color, type Scene } from 'three';
+import { Color, type Camera, type Scene, type WebGLRenderer } from 'three';
 import type { Frame } from '../core/AnimationLoop';
 import type { Species } from '../plants/form';
 import { stepGrowth } from '../plants/GrowthSystem';
@@ -16,6 +16,7 @@ gsap.ticker.lagSmoothing(0);
 
 /** Holds one built plant per species and keeps the one the climate supports on show. */
 export class PlantManager {
+  private readonly scene: Scene;
   private readonly plants = new Map<string, Plant>();
   private readonly windowColors = new Map<Plant, Color>();
   private active: Plant | null = null;
@@ -25,14 +26,29 @@ export class PlantManager {
   private motion = 1;
   private lastView = EMPTY_VIEW;
 
-  constructor(scene: Scene, species: readonly Species[], growth: number) {
+  constructor(scene: Scene, growth: number) {
+    this.scene = scene;
     this.growth = growth;
-    for (const entry of species) {
-      const plant = new Plant(entry);
-      this.plants.set(entry.id, plant);
-      this.windowColors.set(plant, new Color(entry.windowColor));
-      scene.add(plant.object);
+  }
+
+  add(species: Species): Plant {
+    const plant = new Plant(species);
+    this.plants.set(species.id, plant);
+    this.windowColors.set(plant, new Color(species.windowColor));
+    this.scene.add(plant.object);
+    return plant;
+  }
+
+  /** Compiles every shader ahead of time, so nothing stalls when a species first appears. */
+  async compile(renderer: WebGLRenderer, camera: Camera): Promise<number> {
+    const plants = [...this.plants.values()];
+    for (const plant of plants) plant.object.visible = true;
+    for (const look of ['xray', 'specimen'] as const) {
+      for (const plant of plants) plant.setLook(look);
+      await renderer.compileAsync(this.scene, camera);
     }
+    for (const plant of plants) plant.object.visible = false;
+    return renderer.info.programs?.length ?? 0;
   }
 
   /** What the scan window's label calls the plant in view, such as `lotus.bud`. */

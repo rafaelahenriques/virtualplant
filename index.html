@@ -14,6 +14,25 @@
   <body>
     <div id="app"></div>
 
+    <div
+      id="boot"
+      class="boot"
+      role="progressbar"
+      aria-label="Loading"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="0"
+    >
+      <canvas id="boot-flower" class="boot-flower" aria-hidden="true"></canvas>
+      <div class="boot-status" aria-hidden="true">
+        <p id="boot-percent" class="boot-percent">000</p>
+        <p id="boot-step" class="boot-step">Starting</p>
+      </div>
+      <ol id="boot-log" class="boot-log" aria-hidden="true"></ol>
+      <p id="boot-error" class="boot-error" role="alert" hidden></p>
+      <span id="boot-scanline" class="boot-scanline" aria-hidden="true"></span>
+    </div>
+
     <div class="frame" aria-hidden="true">
       <span class="axis axis-across"></span>
       <span class="axis axis-down"></span>
@@ -28,7 +47,7 @@
       <span class="corner corner-br"></span>
     </div>
 
-    <main class="interface">
+    <main id="interface" class="interface">
       <header class="bar">
         <p class="wordmark">Generative Ecosystem</p>
         <div class="bar-actions">

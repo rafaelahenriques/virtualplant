@@ -91,6 +91,15 @@ export function describeOthers(ranking: Assessment<Species>[]): string {
   return others.length > 0 ? `Could also grow here: ${others.join(', ')}` : '';
 }
 
+/** Turns a failed startup into what to do about it. */
+export function describeStartupError(error: unknown): string {
+  const message = error instanceof Error ? error.message : '';
+  if (/webgl/i.test(message)) {
+    return 'This needs WebGL 2, which your browser has turned off or does not support. Try the latest Chrome, Edge, Firefox or Safari.';
+  }
+  return 'Something stopped the page from loading. Reload to try again.';
+}
+
 /** Turns a failed camera start into what to do about it. */
 export function describeTrackingError(error: unknown): string {
   const name = error instanceof Error ? error.name : '';
