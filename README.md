@@ -54,6 +54,12 @@ Outside the scan window the plant is an x-ray. Inside it, the same plant at the 
 
 The scene is drawn twice each frame: the x-ray across the whole screen, then the colour look clipped to the window with a scissor test.
 
+## Loading
+
+The loading screen reports real work as it happens: your graphics hardware, the triangles built for each species, the shaders compiled, whether a camera is present, and the hand model downloading. The numbers on it are measured, and each line stays up long enough to read. The camera stays off throughout.
+
+A stippled flower sharpens from coarse blocks to fine dots as loading progresses, then a scan line sweeps down to uncover the live page and the plant grows in from a seedling. With reduced motion turned on, the sweep is skipped. If the hand model takes more than seven seconds, the page opens anyway and it finishes in the background.
+
 ## Getting started
 
 Requires Node 24 (see `.nvmrc`).
@@ -107,7 +113,7 @@ src/
 ├── plants/     Plant, GrowthSystem, form, geometry
 │   └── species/  One file per species: climate ranges, sources and form
 ├── shaders/    stem.vert, leaf.vert, petal.vert, xray.frag, specimen.frag
-├── ui/         EnvironmentPanel, SpeciesPanel, GrowthScale, Toolbar, HUD, copy
+├── ui/         BootScreen, BootFlower, EnvironmentPanel, SpeciesPanel, GrowthScale, Toolbar, HUD, copy
 ├── store/      ecosystemStore
 ├── types/      Declarations for untyped packages
 └── main.ts
