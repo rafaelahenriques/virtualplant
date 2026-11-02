@@ -41,15 +41,17 @@ export function assess<S extends { niche: Niche }>(
   return { species, score: factors[limitingFactor], limitingFactor, factors };
 }
 
-/** How near the centre of the optimal ranges a climate sits, to separate equal scores. */
-function centrality(niche: Niche, environment: EnvironmentState): number {
+/**
+ * How far a climate sits from a plant's best conditions, in units of its own tolerance. Unlike the
+ * score it keeps growing past the plant's limits, so it still ranks plants that all score 0.
+ */
+function distanceFromBest(niche: Niche, environment: EnvironmentState): number {
   let total = 0;
   for (const key of FACTOR_KEYS) {
     const { min, optMin, optMax, max } = niche[key];
-    const distance = Math.abs(environment[key] - (optMin + optMax) / 2) / ((max - min) / 2);
-    total += Math.max(0, 1 - distance);
+    total += ((environment[key] - (optMin + optMax) / 2) / ((max - min) / 2)) ** 2;
   }
-  return total / FACTOR_KEYS.length;
+  return total;
 }
 
 const SAME_SCORE = 0.001;
@@ -64,6 +66,7 @@ export function rankSpecies<S extends { niche: Niche }>(
     .sort((a, b) =>
       Math.abs(a.score - b.score) > SAME_SCORE
         ? b.score - a.score
-        : centrality(b.species.niche, environment) - centrality(a.species.niche, environment),
+        : distanceFromBest(a.species.niche, environment) -
+          distanceFromBest(b.species.niche, environment),
     );
 }

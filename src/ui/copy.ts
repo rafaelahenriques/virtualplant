@@ -56,29 +56,23 @@ export function describeMatch(
   const percent = Math.round(score * 100);
   if (percent === 100) return '100% match. Every factor is in its best range.';
 
-  const { optMin, optMax } = species.niche[limitingFactor];
+  const { min, optMin, optMax, max } = species.niche[limitingFactor];
   const value = environment[limitingFactor];
   const name = factorName(limitingFactor);
+
+  if (score === 0) {
+    const need =
+      value <= min
+        ? `needs more than ${formatFactor(limitingFactor, min)}`
+        : `needs less than ${formatFactor(limitingFactor, max)}`;
+    return `Closest match, but it would not survive here. The ${name} here is ${formatFactor(limitingFactor, value)}, and it ${need}.`;
+  }
+
   const change =
     value < optMin
       ? `More ${name} would help: its best range starts at ${formatFactor(limitingFactor, optMin)}.`
       : `Less ${name} would help: its best range ends at ${formatFactor(limitingFactor, optMax)}.`;
   return `${percent}% match, limited by ${name}. ${change}`;
-}
-
-/** Explains why nothing grows, naming the closest plant and what it would need. */
-export function describeNoMatch(
-  { species, limitingFactor }: Assessment<Species>,
-  environment: EnvironmentState,
-): string {
-  const { min, max } = species.niche[limitingFactor];
-  const value = environment[limitingFactor];
-  const name = factorName(limitingFactor);
-  const need =
-    value < min
-      ? `${species.commonName}, the closest match, needs at least ${formatFactor(limitingFactor, min)}.`
-      : `${species.commonName}, the closest match, tolerates at most ${formatFactor(limitingFactor, max)}.`;
-  return `The ${name} here is ${formatFactor(limitingFactor, value)}. ${need}`;
 }
 
 /** Other species that could also survive here, or an empty string if none can. */

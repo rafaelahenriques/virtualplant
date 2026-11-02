@@ -12,27 +12,43 @@ import { SPECIES } from '../plants/species';
 export const DEFAULT_GROWTH = 0.78;
 export const DEFAULT_SCAN_TARGET: Point = { x: 0.5, y: 0.34 };
 
+// While a slider moves, the plant on show stays until another fits this much better. Otherwise it
+// would keep swapping between plants that fit about equally well.
+const KEEP_PLANT_MARGIN = 0.1;
+
 export interface EcosystemState {
   environment: EnvironmentState;
-  /** Every species for this climate, best match first. */
+  /** Every species for this climate: the one on show first, then best match first. */
   ranking: Assessment<Species>[];
-  /** The species on show, or null if nothing can survive this climate. */
-  speciesId: string | null;
+  /** The species on show: the best match, or the closest if nothing could survive this climate. */
+  speciesId: string;
   /** Growth stage the plant evolves towards, from 0 (seedling) to 1 (fully grown). */
   growthTarget: number;
   /** Where the scan window is heading, as fractions of the viewport from the top left. */
   scanTarget: Point;
   animationOn: boolean;
+  /** Sets a climate and shows its best match, as when choosing a place. */
   setEnvironment: (patch: Partial<EnvironmentState>) => void;
+  /** Changes a climate gradually, as with a slider, without swapping plants needlessly. */
+  adjustEnvironment: (patch: Partial<EnvironmentState>) => void;
   setGrowthTarget: (target: number) => void;
   setScanTarget: (target: Point) => void;
   setAnimationOn: (on: boolean) => void;
 }
 
-function matchFor(environment: EnvironmentState) {
+function matchFor(environment: EnvironmentState, onShow?: string) {
   const ranking = rankSpecies(SPECIES, environment);
-  const best = ranking[0];
-  return { environment, ranking, speciesId: best && best.score > 0 ? best.species.id : null };
+  const best = ranking[0] as Assessment<Species>;
+  const kept = ranking.find(
+    ({ species, score }) =>
+      species.id === onShow && score > 0 && best.score - score < KEEP_PLANT_MARGIN,
+  );
+  if (!kept) return { environment, ranking, speciesId: best.species.id };
+  return {
+    environment,
+    ranking: [kept, ...ranking.filter((assessment) => assessment !== kept)],
+    speciesId: kept.species.id,
+  };
 }
 
 export function createEcosystemStore() {
@@ -43,6 +59,10 @@ export function createEcosystemStore() {
     animationOn: true,
     setEnvironment: (patch) =>
       set(({ environment }) => matchFor(clampEnvironment({ ...environment, ...patch }))),
+    adjustEnvironment: (patch) =>
+      set(({ environment, speciesId }) =>
+        matchFor(clampEnvironment({ ...environment, ...patch }), speciesId),
+      ),
     setGrowthTarget: (target) => set({ growthTarget: clamp01(target) }),
     setScanTarget: ({ x, y }) => set({ scanTarget: { x: clamp01(x), y: clamp01(y) } }),
     setAnimationOn: (on) => set({ animationOn: on }),

@@ -1,8 +1,8 @@
 import type { EcosystemStore } from '../store/ecosystemStore';
-import { describeMatch, describeNoMatch, describeOthers } from './copy';
+import { describeMatch, describeOthers } from './copy';
 import { required } from './element';
 
-/** Names the plant the climate supports, and says how well it fits. */
+/** Names the plant closest to this climate, and says how well it fits. */
 export function createSpeciesPanel(store: EcosystemStore): void {
   const name = required('species-name');
   const latin = required('species-latin');
@@ -14,24 +14,16 @@ export function createSpeciesPanel(store: EcosystemStore): void {
   let shownSources = '';
 
   const render = () => {
-    const { ranking, environment, speciesId } = store.getState();
+    const { ranking, environment } = store.getState();
     const best = ranking[0];
     if (!best) return;
 
-    if (speciesId === null) {
-      name.textContent = 'Nothing grows here';
-      latin.textContent = '';
-      note.textContent = '';
-      match.textContent = describeNoMatch(best, environment);
-      others.textContent = '';
-    } else {
-      const { commonName, scientificName, habitat, height, flower } = best.species;
-      name.textContent = commonName;
-      latin.textContent = scientificName;
-      note.textContent = `${habitat}. ${height}. ${flower}.`;
-      match.textContent = describeMatch(best, environment);
-      others.textContent = describeOthers(ranking);
-    }
+    const { commonName, scientificName, habitat, height, flower } = best.species;
+    name.textContent = commonName;
+    latin.textContent = scientificName;
+    note.textContent = `${habitat}. ${height}. ${flower}.`;
+    match.textContent = describeMatch(best, environment);
+    others.textContent = describeOthers(ranking);
 
     if (shownSources !== best.species.id) {
       shownSources = best.species.id;

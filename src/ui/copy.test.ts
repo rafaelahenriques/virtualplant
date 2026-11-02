@@ -5,7 +5,6 @@ import { SPECIES } from '../plants/species';
 import {
   describeFactor,
   describeMatch,
-  describeNoMatch,
   describeOthers,
   describeStartupError,
   describeTrackingError,
@@ -38,14 +37,18 @@ describe('describeMatch', () => {
       '85% match, limited by rainfall. More rainfall would help: its best range starts at 2,000 mm a year.',
     );
   });
-});
 
-describe('describeNoMatch', () => {
-  it('names what is missing and for which plant', () => {
+  it('says when the closest plant would not survive, and what it lacks', () => {
     const [closest] = rankSpecies(SPECIES, aswan);
-    expect(describeNoMatch(closest!, aswan)).toBe(
-      "The rainfall here is 1 mm a year. Engelmann's hedgehog cactus, the closest match, needs at least 75 mm a year.",
+    expect(describeMatch(closest!, aswan)).toBe(
+      'Closest match, but it would not survive here. The rainfall here is 1 mm a year, and it needs more than 75 mm a year.',
     );
+  });
+
+  it('says when a factor is over the limit', () => {
+    const scorching = { ...tucson, temperature: 44 };
+    const [closest] = rankSpecies(SPECIES, scorching);
+    expect(describeMatch(closest!, scorching)).toContain('it needs less than');
   });
 });
 

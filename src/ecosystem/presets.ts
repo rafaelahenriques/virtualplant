@@ -4,7 +4,7 @@ export interface ClimatePreset {
   name: string;
   environment: EnvironmentState;
   /** The species this place is known for, which the tests hold the model to. */
-  expected: string | null;
+  expected: string;
 }
 
 // Rounded from published climate normals and, where a plant grows under a canopy, the light
@@ -49,10 +49,5 @@ export const CLIMATE_PRESETS: ClimatePreset[] = [
     name: 'Svalbard, Arctic tundra',
     environment: { temperature: 5, humidity: 78, rainfall: 220, sunlight: 6 },
     expected: 'poppy',
-  },
-  {
-    name: 'Aswan, Sahara',
-    environment: { temperature: 33, humidity: 20, rainfall: 1, sunlight: 11.5 },
-    expected: null,
   },
 ];
