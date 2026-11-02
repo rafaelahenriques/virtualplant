@@ -271,6 +271,7 @@ export const hedgehog: Species = {
           detail: [1, 2],
           glow: 0.45,
           veins: 0,
+          rigid: true,
           blades: spines(plan),
         },
         ...flowerHeads(plan),

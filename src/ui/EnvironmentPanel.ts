@@ -31,7 +31,7 @@ export function createEnvironmentPanel(store: EcosystemStore): void {
   for (const key of FACTOR_KEYS) {
     const row = createRow(key);
     row.input.addEventListener('input', () => {
-      store.getState().setEnvironment({ [key]: Number(row.input.value) });
+      store.getState().adjustEnvironment({ [key]: Number(row.input.value) });
       place.value = CUSTOM;
     });
     rows.set(key, row);
@@ -50,7 +50,9 @@ export function createEnvironmentPanel(store: EcosystemStore): void {
       value.textContent = readout;
       input.setAttribute('aria-valuetext', readout);
       note.textContent = describeFactor(key, best, environment);
-      row.dataset.limiting = String(best.limitingFactor === key && best.score < 0.995);
+      row.dataset.limiting = String(
+        best.factors[key] === 0 || (best.limitingFactor === key && best.score < 0.995),
+      );
       paintTolerance(track, key, best.species.niche[key]);
     }
   };

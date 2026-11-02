@@ -40,12 +40,13 @@ describe('assess', () => {
 describe('rankSpecies on real places', () => {
   it.each(CLIMATE_PRESETS)('$name supports $expected', ({ environment, expected }) => {
     const [best] = rankSpecies(SPECIES, environment);
-    if (expected === null) {
-      expect(best?.score).toBe(0);
-    } else {
-      expect(best?.species.id).toBe(expected);
-      expect(best?.score).toBeGreaterThan(0.6);
-    }
+    expect(best?.species.id).toBe(expected);
+    expect(best?.score).toBeGreaterThan(0.6);
+  });
+
+  it('gives every species exactly one place', () => {
+    const places = CLIMATE_PRESETS.map(({ expected }) => expected).sort();
+    expect(places).toEqual(SPECIES.map(({ id }) => id).sort());
   });
 
   it('never lets a plant grow beyond a limit it has', () => {
@@ -54,6 +55,26 @@ describe('rankSpecies on real places', () => {
       const tooHot = { ...CLIMATE_PRESETS[0]!.environment, temperature: temperature.max + 1 };
       expect(assess(species, tooHot).score).toBe(0);
     }
+  });
+});
+
+describe('rankSpecies where nothing could survive', () => {
+  it.each([
+    [
+      'a hot, dry desert',
+      'hedgehog',
+      { temperature: 33, humidity: 20, rainfall: 1, sunlight: 11.5 },
+    ],
+    ['deep cold', 'poppy', { temperature: -10, humidity: 78, rainfall: 220, sunlight: 6 }],
+    [
+      'a hot, shaded jungle',
+      'orchid',
+      { temperature: 40, humidity: 99, rainfall: 5000, sunlight: 1 },
+    ],
+  ])('puts the closest plant first in %s', (_, expected, environment) => {
+    const [closest] = rankSpecies(SPECIES, environment);
+    expect(closest?.score).toBe(0);
+    expect(closest?.species.id).toBe(expected);
   });
 });
 

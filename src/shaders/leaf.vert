@@ -12,11 +12,12 @@ varying vec3 vTipColor;
 void main() {
   vec3 bent = position;
 
-  // Sways more towards the tip so the leaf stays attached to the stem.
-  float bend = uv.y * uv.y;
+  // Sways more further from the base, so the leaf stays attached to the stem. Measured across the
+  // whole leaf, so a divided leaf's stalks and leaflets move together and stay joined.
+  float bend = dot(position, position);
   // World position offsets the phase so leaves do not move in unison.
   float phase = modelMatrix[3].x * 0.5 + modelMatrix[3].y * 0.3;
-  bent.z += bend * 0.03 * sin(uTime * 1.5 + phase) * uMotion;
+  bent.z += bend * 0.015 * sin(uTime * 1.5 + phase) * uMotion;
 
   vec4 viewPosition = modelViewMatrix * vec4(bent, 1.0);
   vUv = uv;

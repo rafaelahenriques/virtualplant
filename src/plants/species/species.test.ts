@@ -107,6 +107,11 @@ describe('sunflower', () => {
     expect(outer.start).toBeLessThan(inner.start);
   });
 
+  it('holds its disc florets still, packed into the head', () => {
+    const head = form.heads.find(({ blades: parts }) => parts.some((b) => b.role === 'floret'));
+    expect(head?.rigid).toBe(true);
+  });
+
   it('has a stem of 100 to 300 cm and leaves of 10 to 40 cm', () => {
     const height = form.stems[0]!.curve.getPointAt(1).y;
     expect(height).toBeGreaterThanOrEqual(100);
@@ -236,6 +241,12 @@ describe('hedgehog cactus', () => {
     const perAreole = spines.length / (body.ribs * 11);
     expect(perAreole).toBeGreaterThanOrEqual(15);
     expect(perAreole).toBeLessThanOrEqual(20);
+  });
+
+  it('keeps its spines stiff while its flowers sway', () => {
+    const [spines, flower] = form.bodies[0]!.heads;
+    expect(spines?.rigid).toBe(true);
+    expect(flower?.rigid).toBeFalsy();
   });
 
   it('has flowers of 6 to 9 cm with a green stigma', () => {

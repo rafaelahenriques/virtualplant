@@ -177,6 +177,7 @@ export const sunflower: Species = {
           detail: [1, 2],
           glow: 0.3,
           veins: 0,
+          rigid: true,
           blades: discFlorets(),
         },
       ],

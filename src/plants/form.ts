@@ -139,6 +139,8 @@ export interface HeadSpec {
   /** X-ray brightness, lower where many blades overlap. */
   glow: number;
   veins: number;
+  /** Stiff parts, such as spines, stay still when the rest of the plant sways. */
+  rigid?: boolean;
 }
 
 export interface BodySpec {

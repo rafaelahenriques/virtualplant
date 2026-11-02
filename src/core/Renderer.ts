@@ -8,15 +8,17 @@ import {
 } from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { PersistentRenderPass } from './PersistentRenderPass';
 import type { ScanRect } from './ScanWindow';
 
 const MAX_PIXEL_RATIO = 2;
+// The x-ray is soft and glowing, so it doesn't need every pixel of a high-density screen. This
+// roughly halves the time each frame takes, and the slower the frames, the worse the flicker.
+const XRAY_PIXEL_RATIO = 1.25;
 const BLOOM_STRENGTH = 0.38;
 const BLOOM_RADIUS = 0.75;
 const BLOOM_THRESHOLD = 0.08;
-const ANTIALIAS_SAMPLES = 4;
 
 export function createRenderer(container: HTMLElement): WebGLRenderer {
   const renderer = new WebGLRenderer({ antialias: true });
@@ -35,14 +37,11 @@ export function createGlowComposer(
   const { x: width, y: height } = renderer.getDrawingBufferSize(new Vector2());
   const composer = new EffectComposer(
     renderer,
-    new WebGLRenderTarget(width, height, {
-      type: HalfFloatType,
-      samples: ANTIALIAS_SAMPLES,
-    }),
+    new WebGLRenderTarget(width, height, { type: HalfFloatType, depthBuffer: false }),
   );
-  composer.setPixelRatio(renderer.getPixelRatio());
+  composer.setPixelRatio(Math.min(renderer.getPixelRatio(), XRAY_PIXEL_RATIO));
   composer.setSize(renderer.domElement.clientWidth, renderer.domElement.clientHeight);
-  composer.addPass(new RenderPass(scene, camera));
+  composer.addPass(new PersistentRenderPass(scene, camera));
   composer.addPass(
     new UnrealBloomPass(
       new Vector2(width / 2, height / 2),

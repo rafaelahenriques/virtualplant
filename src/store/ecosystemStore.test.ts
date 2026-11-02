@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { CLIMATE_FACTORS, DEFAULT_ENVIRONMENT } from '../ecosystem/Environment';
+import { CLIMATE_PRESETS } from '../ecosystem/presets';
+import { rankSpecies } from '../ecosystem/Suitability';
+import { SPECIES } from '../plants/species';
 import { createEcosystemStore } from './ecosystemStore';
 
 describe('ecosystemStore', () => {
@@ -26,10 +29,37 @@ describe('ecosystemStore', () => {
     expect(store.getState().speciesId).toBe('orchid');
   });
 
-  it('shows nothing where nothing can survive', () => {
+  it('keeps the closest plant on show where nothing could survive', () => {
     const store = createEcosystemStore();
     store.getState().setEnvironment({ temperature: 33, humidity: 20, rainfall: 0, sunlight: 11 });
-    expect(store.getState().speciesId).toBeNull();
+    expect(store.getState().ranking[0]?.score).toBe(0);
+    expect(store.getState().speciesId).toBe('hedgehog');
+  });
+
+  it('keeps the plant on show while a slider moves, until another fits clearly better', () => {
+    const store = createEcosystemStore();
+    store.getState().setEnvironment({ temperature: 19, humidity: 47, rainfall: 750, sunlight: 9 });
+    expect(store.getState().speciesId).toBe('lavender');
+
+    // Sunflower is now as good a fit and nearer its centre, but lavender still fits.
+    store.getState().adjustEnvironment({ temperature: 24 });
+    expect(rankSpecies(SPECIES, store.getState().environment)[0]?.species.id).toBe('sunflower');
+    expect(store.getState().speciesId).toBe('lavender');
+    expect(store.getState().ranking[0]?.species.id).toBe('lavender');
+
+    store.getState().adjustEnvironment({ temperature: 27 });
+    expect(store.getState().speciesId).toBe('sunflower');
+  });
+
+  it('gives each place its own plant, whatever was on show', () => {
+    const store = createEcosystemStore();
+    for (const from of CLIMATE_PRESETS) {
+      for (const to of CLIMATE_PRESETS) {
+        store.getState().setEnvironment(from.environment);
+        store.getState().setEnvironment(to.environment);
+        expect(store.getState().speciesId).toBe(to.expected);
+      }
+    }
   });
 
   it('clamps the growth target to 0..1', () => {

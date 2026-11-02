@@ -12,6 +12,7 @@ varying vec3 vTipColor;
 const float PI = 3.141592653589793;
 // In view space, from the upper left and in front of the plant.
 const vec3 LIGHT = vec3(-0.35, 0.75, 0.55);
+const float VEIN_AVERAGE = 0.23;
 
 float stipple() {
   return fract(sin(dot(floor(gl_FragCoord.xy / 2.0), vec2(12.9898, 78.233))) * 43758.5453);
@@ -30,7 +31,14 @@ void main() {
 
   vec3 color = mix(vBaseColor, vTipColor, smoothstep(0.05, 0.85, vUv.y));
 
-  float veins = uVeins > 0.0 ? pow(abs(cos(vUv.x * uVeins * PI)), 12.0) : 0.0;
+  float veins = 0.0;
+  if (uVeins > 0.0) {
+    // Veins too fine for the screen would shimmer as the plant sways, so they settle to their
+    // average brightness before they get that fine.
+    float pixelsPerVein = 1.0 / max(fwidth(vUv.x) * uVeins, 0.0001);
+    float sharpness = smoothstep(4.0, 9.0, pixelsPerVein);
+    veins = mix(VEIN_AVERAGE, pow(abs(cos(vUv.x * uVeins * PI)), 12.0), sharpness);
+  }
   color *= 1.0 - 0.14 * veins * (1.0 - vUv.y);
 
   // Thin tissue seen edge-on catches the light.

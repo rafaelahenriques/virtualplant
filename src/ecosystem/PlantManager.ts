@@ -8,7 +8,7 @@ import { Plant, type Look } from '../plants/Plant';
 const DISSOLVE_OUT = 0.3;
 const DISSOLVE_IN = 0.6;
 const MOTION_RATE = 3;
-const EMPTY_WINDOW = new Color(0x15171a);
+const WINDOW_COLOR_RATE = 4;
 const EMPTY_VIEW = { center: 30, span: 60 };
 
 // Keeps transitions on time when frames are slow, rather than stretching them out.
@@ -24,7 +24,8 @@ export class PlantManager {
   private transition: gsap.core.Tween | null = null;
   private growth: number;
   private motion = 1;
-  private lastView = EMPTY_VIEW;
+  /** Eases to the next plant's tint, so the window doesn't flash when plants swap. */
+  readonly windowColor = new Color(0x15171a);
 
   constructor(scene: Scene, growth: number) {
     this.scene = scene;
@@ -56,25 +57,19 @@ export class PlantManager {
     return this.active ? `${this.active.species.id}.${this.active.stage}` : 'none';
   }
 
-  get windowColor(): Color {
-    return (this.active && this.windowColors.get(this.active)) ?? EMPTY_WINDOW;
-  }
-
-  /** Stays where it was while nothing is on show, so the camera doesn't jump. */
   get view(): { center: number; span: number } {
-    if (this.active) this.lastView = this.active.view;
-    return this.lastView;
+    return this.active?.view ?? EMPTY_VIEW;
   }
 
-  /** Dissolves the current plant into dots, then brings in the next, if there is one. */
-  show(id: string | null): void {
-    const next = id === null ? null : (this.plants.get(id) ?? null);
-    if (next === this.target) return;
+  /** Dissolves the current plant into dots, then brings in the next. */
+  show(id: string): void {
+    const next = this.plants.get(id);
+    if (!next || next === this.target) return;
     this.target = next;
     this.transition?.kill();
 
     const previous = this.active;
-    if (next === previous && next) {
+    if (next === previous) {
       this.transition = gsap.to(next.reveal, { value: 1, duration: DISSOLVE_IN });
       return;
     }
@@ -82,7 +77,6 @@ export class PlantManager {
     const appear = () => {
       if (previous) previous.object.visible = false;
       this.active = next;
-      if (!next) return;
       next.reveal.value = 0;
       next.object.visible = true;
       next.update(0, this.growth, this.motion);
@@ -105,6 +99,8 @@ export class PlantManager {
     const motionTarget = animationOn ? 1 : 0;
     this.motion += (motionTarget - this.motion) * (1 - Math.exp(-MOTION_RATE * frame.delta));
     this.active?.update(frame.elapsed, this.growth, this.motion);
+    const tint = this.target && this.windowColors.get(this.target);
+    if (tint) this.windowColor.lerp(tint, 1 - Math.exp(-WINDOW_COLOR_RATE * frame.delta));
   }
 
   setLook(look: Look): void {

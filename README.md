@@ -10,7 +10,7 @@ The procedural plant generator and growth simulation are the technical centrepie
 
 Four real-world measurements decide which species grows: temperature during the growing season (°C), relative humidity (%), rainfall (mm per year) and direct sun during the growing season (hours per day).
 
-Each species has a minimum, an optimal range and a maximum for every factor. A factor scores 1 inside the optimal range, 0 outside the limits, and falls in a straight line between. The plant's score is its **worst** factor, because a plant does only as well as its limiting condition allows. This is the limiting-factor approach used by [FAO's EcoCrop model](https://gaez.fao.org/pages/ecocrop). The highest score wins, and if every species scores 0 then nothing grows and the interface names the limiting factor.
+Each species has a minimum, an optimal range and a maximum for every factor. A factor scores 1 inside the optimal range, 0 outside the limits, and falls in a straight line between. The plant's score is its **worst** factor, because a plant does only as well as its limiting condition allows. This is the limiting-factor approach used by [FAO's EcoCrop model](https://gaez.fao.org/pages/ecocrop). The highest score wins. If every species scores 0, the one closest to its best conditions stays on show and the interface says it would not survive there, so you never have to get every value right to see a plant. While a slider moves, the plant on show also stays until another fits at least 10 points better, so it doesn't keep swapping between plants that fit about equally well. Choosing a place always shows that place's plant.
 
 | Climate             | Species                                                 | Temperature | Humidity | Rainfall     | Sun        |
 | ------------------- | ------------------------------------------------------- | ----------- | -------- | ------------ | ---------- |
@@ -25,7 +25,7 @@ Each species has a minimum, an optimal range and a maximum for every factor. A f
 
 The table shows optimal ranges only. Each species file in `src/plants/species/` holds the full ranges and its sources, such as FAO EcoCrop, Flora of North America, the American Orchid Society and NASA, and marks each factor as published or derived. Derived means the sources describe the habitat rather than give a number, so the range is worked out from that habitat's climate. Treat those as informed estimates.
 
-Each plant is also built to its published description, in real centimetres: a trillium has three bracts, three sepals and three petals, an arctic poppy has four petals and drops its two sepals as it opens, and a sunflower's disc florets sit on the golden angle and open from the rim inwards. The tests in `src/plants/species/species.test.ts` check these counts and sizes, and `src/ecosystem/Suitability.test.ts` checks that real places, from Tucson to Svalbard, get the species they are known for.
+Each plant is also built to its published description, in real centimetres: a trillium has three bracts, three sepals and three petals, an arctic poppy has four petals and drops its two sepals as it opens, and a sunflower's disc florets sit on the golden angle and open from the rim inwards. The tests in `src/plants/species/species.test.ts` check these counts and sizes, and `src/ecosystem/Suitability.test.ts` checks that each species has one real place, from Tucson to Svalbard, and that the place gets the species it is known for.
 
 Plants of the same species all look the same for now. Variation between individuals comes with the procedural generator in phase 2.
 
@@ -52,7 +52,7 @@ The overlay shows the live reading. If `grow` can't reach 0 or 1 on your hand, a
 
 Outside the scan window the plant is an x-ray. Inside it, the same plant at the same growth stage renders as a solid flower in colour. The window follows the centre of your palm, which stays still while your fingers pinch, so one hand controls growth and position at once. With no hand in view, it stays where it is.
 
-The scene is drawn twice each frame: the x-ray across the whole screen, then the colour look clipped to the window with a scissor test.
+The scene is drawn twice each frame: the x-ray across the whole screen, then the colour look clipped to the window with a scissor test. The x-ray is drawn at a lower resolution, and each frame is blended into the ones before it, so thin tissue doesn't flicker as it sways from one pixel to the next.
 
 ## Loading
 
@@ -106,13 +106,14 @@ Each file arrives with the phase that needs it, so nothing in `src/` is an empty
 
 ```text
 src/
-├── core/       Scene, Camera, Renderer, AnimationLoop, ScanWindow, math
+├── core/       Scene, Camera, Renderer, PersistentRenderPass, AnimationLoop, ScanWindow, math
 ├── tracking/   HandTracker, GestureRecognizer, GestureMapper, videoSpace
 ├── ecosystem/  Environment, Suitability, presets, PlantManager
 │               Simulation (phase 6), Ecosystem (phase 7)
 ├── plants/     Plant, GrowthSystem, form, geometry
 │   └── species/  One file per species: climate ranges, sources and form
-├── shaders/    stem.vert, leaf.vert, petal.vert, xray.frag, specimen.frag
+├── shaders/    stem.vert, leaf.vert, petal.vert, xray.frag, specimen.frag,
+│               fullscreen.vert, persistence.frag
 ├── ui/         BootScreen, BootFlower, EnvironmentPanel, SpeciesPanel, GrowthScale, Toolbar, HUD, copy
 ├── store/      ecosystemStore
 ├── types/      Declarations for untyped packages
