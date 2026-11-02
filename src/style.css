@@ -679,8 +679,12 @@ button {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* On one line here, because the top bar must stay clear of the scan window. */
   .bar-start {
     grid-row: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .bar-actions {
