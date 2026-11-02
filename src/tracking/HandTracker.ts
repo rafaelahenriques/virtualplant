@@ -1,7 +1,7 @@
 import type { Hand, HandPose } from 'ml5';
 import type { Size } from '../core/math';
 
-export type HandsListener = (hands: Hand[], video: Size) => void;
+type HandsListener = (hands: Hand[], video: Size) => void;
 
 /** Owns the webcam and ml5 HandPose. ml5 is about 4 MB, so it loads outside the main bundle. */
 export class HandTracker {
@@ -11,26 +11,20 @@ export class HandTracker {
   private stream?: MediaStream;
   private running = false;
 
-  /** Fetches ml5 and the hand model without touching the camera. Safe to call repeatedly. */
-  loadModel(): Promise<HandPose> {
-    this.modelLoad ??= import('ml5')
-      .then(({ default: ml5 }) => ml5.handPose({ maxHands: 1, flipped: true }))
-      .catch((error: unknown) => {
-        // Let the next attempt try again.
-        this.modelLoad = undefined;
-        throw error;
-      });
-    return this.modelLoad;
-  }
-
   subscribe(listener: HandsListener): void {
     this.listeners.add(listener);
   }
 
   async start(): Promise<void> {
+    // Comes first, so the camera isn't on while about 9 MB downloads.
+    this.model = await this.loadModel();
+
     this.stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: 640, height: 480 },
+      // The coordinates assume a mirrored view of whoever is facing the screen.
+      video: { facingMode: 'user', width: 640, height: 480 },
     });
+    // Unplugging the camera or revoking permission ends the track.
+    this.stream.getVideoTracks()[0]?.addEventListener('ended', () => this.stop());
 
     const video = document.createElement('video');
     video.srcObject = this.stream;
@@ -41,8 +35,6 @@ export class HandTracker {
     // then silently finds no hands.
     video.width = video.videoWidth;
     video.height = video.videoHeight;
-
-    this.model = await this.loadModel();
 
     this.running = true;
     this.model.detectStart(video, (hands) => {
@@ -56,6 +48,17 @@ export class HandTracker {
     this.model?.detectStop();
     this.stream?.getTracks().forEach((track) => track.stop());
     this.emit([], { width: 0, height: 0 });
+  }
+
+  private loadModel(): Promise<HandPose> {
+    this.modelLoad ??= import('ml5')
+      .then(({ default: ml5 }) => ml5.handPose({ maxHands: 1, flipped: true }))
+      .catch((error: unknown) => {
+        // Let the next attempt try again.
+        this.modelLoad = undefined;
+        throw error;
+      });
+    return this.modelLoad;
   }
 
   private emit(hands: Hand[], video: Size): void {

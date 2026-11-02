@@ -112,7 +112,6 @@ export const lavender: Species = {
   id: 'lavender',
   commonName: 'True lavender',
   scientificName: 'Lavandula angustifolia',
-  family: 'Lamiaceae',
   habitat: 'Dry, sunny Mediterranean slopes',
   height: 'Up to 60 cm',
   flower: 'Spikes of two-lipped flowers, thin opposite leaves',

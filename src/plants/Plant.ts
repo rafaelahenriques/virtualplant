@@ -14,6 +14,7 @@ import leafVertex from '../shaders/leaf.vert?raw';
 import petalVertex from '../shaders/petal.vert?raw';
 import specimenFragment from '../shaders/specimen.frag?raw';
 import stemVertex from '../shaders/stem.vert?raw';
+import tissue from '../shaders/tissue.glsl?raw';
 import xrayFragment from '../shaders/xray.frag?raw';
 import type { BodySpec, HeadSpec, LeafSpec, Species, StemSpec } from './form';
 import {
@@ -226,18 +227,21 @@ export class Plant {
     baseColor = 0xffffff,
     tipColor = 0xffffff,
   }: MaterialOptions): Materials {
+    const shared = {
+      ...this.uniforms,
+      uFlex: { value: flex },
+      uBaseColor: { value: new Color(baseColor) },
+      uTipColor: { value: new Color(tipColor) },
+      uVeins: { value: veins },
+    };
     return {
       xray: new ShaderMaterial({
         vertexShader,
-        fragmentShader: xrayFragment,
+        fragmentShader: tissue + xrayFragment,
         uniforms: {
-          ...this.uniforms,
-          uFlex: { value: flex },
-          uBaseColor: { value: new Color(baseColor) },
-          uTipColor: { value: new Color(tipColor) },
+          ...shared,
           uColor: { value: new Color(xray) },
           uIntensity: { value: glow },
-          uVeins: { value: veins },
         },
         side: DoubleSide,
         transparent: true,
@@ -250,14 +254,8 @@ export class Plant {
       }),
       specimen: new ShaderMaterial({
         vertexShader,
-        fragmentShader: specimenFragment,
-        uniforms: {
-          ...this.uniforms,
-          uFlex: { value: flex },
-          uBaseColor: { value: new Color(baseColor) },
-          uTipColor: { value: new Color(tipColor) },
-          uVeins: { value: veins },
-        },
+        fragmentShader: tissue + specimenFragment,
+        uniforms: shared,
         side: DoubleSide,
       }),
     };

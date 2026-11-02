@@ -64,7 +64,7 @@ export function blade(input: BladeInput): BladeSpec {
 }
 
 /** Small repeatable offsets stop a ring looking machine-made. */
-export const variation = (i: number, seed = 0): number => Math.sin(i * 7.3 + seed * 2.1);
+const variation = (i: number, seed = 0): number => Math.sin(i * 7.3 + seed * 2.1);
 
 /** Evenly spaced blades around the axis, offset by `phase`. */
 export function ring(count: number, input: BladeInput, phase = 0, jitter = 0.08): BladeSpec[] {
@@ -167,7 +167,7 @@ export interface PlantForm {
   bodies: BodySpec[];
 }
 
-export interface Framing {
+interface Framing {
   /** Height the camera centres on and how many centimetres fill the screen's height. */
   seedling: { center: number; span: number };
   bloom: { center: number; span: number };
@@ -182,7 +182,7 @@ export function framing(
   return { seedling, bloom: { center: flowerHeight - bloomSpan * 0.16, span: bloomSpan } };
 }
 
-export interface Source {
+interface Source {
   label: string;
   url: string;
 }
@@ -191,7 +191,6 @@ export interface Species {
   id: string;
   commonName: string;
   scientificName: string;
-  family: string;
   habitat: string;
   /** Short facts in the words of the sources. */
   height: string;

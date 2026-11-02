@@ -1,4 +1,6 @@
 :root {
+  color-scheme: dark;
+
   --void: #08090b;
   --bone: #eef1ec;
   --ash: #9aa09f;
@@ -353,7 +355,7 @@ button {
 }
 
 .quiet:hover,
-.quiet[aria-pressed='true'] {
+.quiet[data-on='true'] {
   color: var(--bone);
 }
 
@@ -454,6 +456,10 @@ button {
 .sources a {
   color: var(--bone);
   text-underline-offset: 3px;
+}
+
+.credits {
+  margin: 6px 0 0;
 }
 
 /* Growth: a hairline scale marked with the stages it passes through. */
@@ -626,8 +632,8 @@ button {
   color: var(--bone);
 }
 
-/* On a phone the plant keeps the top half, and the controls scroll beneath it. */
-@media (max-width: 760px) {
+/* On a phone, either way up, the plant keeps the top half and the controls scroll beneath it. */
+@media (max-width: 760px), (max-height: 530px) {
   body {
     font-size: 14px;
   }
@@ -635,7 +641,7 @@ button {
   .boot-status {
     left: 16px;
     bottom: auto;
-    top: calc(34% + 39vw + 12px);
+    top: calc(34% + min(31vh, 39vw) + 12px);
   }
 
   .boot-log {
@@ -717,7 +723,9 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  ::before,
+  ::after {
     transition: none !important;
   }
 }

@@ -1,6 +1,6 @@
 import type { EnvironmentState } from './Environment';
 
-export interface ClimatePreset {
+interface ClimatePreset {
   name: string;
   environment: EnvironmentState;
   /** The species this place is known for, which the tests hold the model to. */

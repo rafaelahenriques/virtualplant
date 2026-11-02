@@ -1,8 +1,8 @@
 # Generative Ecosystem
 
-A living 3D environment where hand gestures influence plant growth and environmental conditions. Plants are generated procedurally and respond to a simulated environment, with the webcam as the controller.
+A 3D plant you grow with your hands. Set a climate, or choose a real place, and a climate model picks which of eight real species could live there. Pinch your fingers to move it through its growth stages, and move your palm to scan its x-ray in colour.
 
-The procedural plant generator and growth simulation are the technical centrepiece. Hand tracking is how you interact with them.
+Every plant is built in code to its botanical description, with no 3D model files, and each climate range cites its sources. Hand tracking runs in your browser from the webcam.
 
 **Live:** [rafaelahenriques.github.io/virtualplant](https://rafaelahenriques.github.io/virtualplant/). Each push to `main` deploys there through GitHub Pages.
 
@@ -62,9 +62,9 @@ The scene is drawn twice each frame: the x-ray across the whole screen, then the
 
 ## Loading
 
-The loading screen reports real work as it happens: your graphics hardware, the triangles built for each species, the shaders compiled, whether a camera is present, and the hand model downloading. The numbers on it are measured, and each line stays up long enough to read. The camera stays off throughout.
+The loading screen reports real work as it happens: your graphics hardware, the triangles built for each species, the shaders compiled and whether a camera is present. The numbers on it are measured, and each line stays up long enough to read. The camera stays off throughout.
 
-A stippled flower sharpens from coarse blocks to fine dots as loading progresses, then a scan line sweeps down to uncover the live page and the plant grows in from a seedling. With reduced motion turned on, the sweep is skipped. If the hand model takes more than seven seconds, the page opens anyway and it finishes in the background.
+A stippled flower sharpens from coarse blocks to fine dots as loading progresses, then a scan line sweeps down to uncover the live page and the plant grows in from a seedling. With reduced motion turned on, the sweep and the growing in are skipped.
 
 ## Getting started
 
@@ -75,7 +75,7 @@ npm install
 npm run dev
 ```
 
-The camera is only requested when you press **Start** under **Hand tracking**. Browsers allow camera access on `localhost` and HTTPS only.
+The camera is only requested when you press **Start hand tracking**. Browsers allow camera access on `localhost` and HTTPS only.
 
 | Command                | Purpose                              |
 | ---------------------- | ------------------------------------ |
@@ -89,23 +89,24 @@ The camera is only requested when you press **Start** under **Hand tracking**. B
 
 ## Stack
 
-| Technology                          | Purpose                                     |
-| ----------------------------------- | ------------------------------------------- |
-| TypeScript, Vite                    | Application logic, development and bundling |
-| Three.js                            | 3D scene and plant rendering on WebGL 2     |
-| GLSL                                | Plant animation and environmental effects   |
-| ml5.js HandPose                     | Hand tracking, 21 landmarks per hand        |
-| Zustand                             | Ecosystem state                             |
-| GSAP                                | Smooth transitions                          |
-| Schibsted Grotesk, Instrument Serif | Self-hosted interface type                  |
-| Vitest                              | Unit tests                                  |
+| Technology                            | Purpose                                                                    |
+| ------------------------------------- | -------------------------------------------------------------------------- |
+| TypeScript, Vite                      | Application logic, development and bundling                                |
+| Three.js                              | 3D scene and plant rendering on WebGL 2                                    |
+| GLSL                                  | Plant growth and sway, and the x-ray and colour looks                      |
+| [ml5.js](https://ml5js.org/) HandPose | Hand tracking, 21 landmarks per hand. [Licence](https://ml5js.org/license) |
+| Zustand                               | Ecosystem state                                                            |
+| GSAP                                  | Plant dissolves, music fades and the loading sweep                         |
+| Schibsted Grotesk, Instrument Serif   | Self-hosted interface type                                                 |
+| Vitest                                | Unit tests                                                                 |
+| GitHub Actions, GitHub Pages          | Checks and hosting                                                         |
 
 ## Architecture
 
-Gestures never touch rendering directly. Tracking only reports what the hands are doing, the interaction layer turns that into environment changes, and the simulation and renderer read from the store.
+Gestures never touch rendering directly. Tracking only reports what the hands are doing, the interaction layer turns that into changes to growth and the scan window, and the renderer reads from the store.
 
 ```text
-webcam → HandTracker → GestureRecognizer → GestureMapper → ecosystemStore → Simulation, Plant, shaders
+webcam → HandTracker → GestureRecognizer → GestureMapper → ecosystemStore → Plant, shaders
 ```
 
 Each file arrives with the phase that needs it, so nothing in `src/` is an empty stub:
@@ -118,7 +119,7 @@ src/
 │               Simulation (phase 6), Ecosystem (phase 7)
 ├── plants/     Plant, GrowthSystem, form, geometry
 │   └── species/  One file per species: climate ranges, sources and form
-├── shaders/    stem.vert, leaf.vert, petal.vert, xray.frag, specimen.frag,
+├── shaders/    stem.vert, leaf.vert, petal.vert, tissue.glsl, xray.frag, specimen.frag,
 │               fullscreen.vert, persistence.frag
 ├── ui/         BootScreen, BootFlower, EnvironmentPanel, SpeciesPanel, GrowthScale, Toolbar, HUD, copy
 ├── audio/      MusicPlayer and the track
@@ -131,7 +132,7 @@ Shaders are imported as strings with Vite's `?raw` suffix, for example `import l
 
 The visual direction is plants as x-ray specimens under machine observation: translucent, veined tissue glowing on grainy near-black, thin tracking overlays and monospace readouts. The interface stays monochrome, so colour only ever appears inside the scan window. Each climate slider draws the current plant's limits and best range on its track. **Hide interface** clears the text and controls, leaving the plant and its scan window.
 
-The camera is only used on your device. Video frames go to the hand model in your browser and are never sent anywhere.
+The camera is only used on your device. Video frames go to the hand model in your browser and are never sent anywhere. The hand tracking library and model download only when you first press **Start hand tracking**, about 9 MB, and the model comes from Google's TensorFlow Hub, so Google sees that request as it would any download.
 
 ## Roadmap
 
@@ -144,7 +145,7 @@ The camera is only used on your device. Video frames go to the hand model in you
 | 5     | Gesture recognition and interaction           | Started |
 | 6     | Environmental simulation                      | Started |
 | 7     | Multiple plants and ecosystem behaviour       | Planned |
-| 8     | Custom shaders, lighting and visual polish    | Planned |
+| 8     | Custom shaders, lighting and visual polish    | Started |
 
 ## Contributing
 

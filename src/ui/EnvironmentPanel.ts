@@ -57,11 +57,8 @@ export function createEnvironmentPanel(store: EcosystemStore): void {
     }
   };
 
-  let environment = store.getState().environment;
-  store.subscribe((state) => {
-    if (state.environment === environment) return;
-    environment = state.environment;
-    render();
+  store.subscribe((state, previous) => {
+    if (state.environment !== previous.environment) render();
   });
   render();
 }
@@ -77,9 +74,8 @@ function createRow(key: ClimateFactor): FactorRow {
   const name = document.createElement('label');
   name.htmlFor = `factor-${key}`;
   name.textContent = label;
-  const value = document.createElement('output');
+  const value = document.createElement('span');
   value.className = 'factor-value';
-  value.htmlFor = `factor-${key}`;
   head.append(name, value);
 
   const track = document.createElement('div');

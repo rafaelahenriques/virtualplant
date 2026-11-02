@@ -20,9 +20,12 @@ const BLOOM_STRENGTH = 0.38;
 const BLOOM_RADIUS = 0.75;
 const BLOOM_THRESHOLD = 0.08;
 
+export const screenPixelRatio = (): number => Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO);
+const xrayPixelRatio = (): number => Math.min(window.devicePixelRatio, XRAY_PIXEL_RATIO);
+
 export function createRenderer(container: HTMLElement): WebGLRenderer {
   const renderer = new WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
+  renderer.setPixelRatio(screenPixelRatio());
   renderer.setSize(container.clientWidth, container.clientHeight);
   container.appendChild(renderer.domElement);
   return renderer;
@@ -39,7 +42,7 @@ export function createGlowComposer(
     renderer,
     new WebGLRenderTarget(width, height, { type: HalfFloatType, depthBuffer: false }),
   );
-  composer.setPixelRatio(Math.min(renderer.getPixelRatio(), XRAY_PIXEL_RATIO));
+  composer.setPixelRatio(xrayPixelRatio());
   composer.setSize(renderer.domElement.clientWidth, renderer.domElement.clientHeight);
   composer.addPass(new PersistentRenderPass(scene, camera));
   composer.addPass(
@@ -69,17 +72,24 @@ export function renderInRect(
   renderer.setScissorTest(false);
 }
 
+/**
+ * Also rereads the pixel ratio, which changes with browser zoom or a move to another screen. Uses
+ * the window's resize event because it fires before the frame is drawn. A ResizeObserver fires
+ * after, and resizing clears the canvas, so the page would show a blank frame.
+ */
 export function fitToContainer(
   container: HTMLElement,
   renderer: WebGLRenderer,
   composer: EffectComposer,
   camera: PerspectiveCamera,
 ): void {
-  new ResizeObserver(() => {
+  window.addEventListener('resize', () => {
     const { clientWidth: width, clientHeight: height } = container;
+    renderer.setPixelRatio(screenPixelRatio());
     renderer.setSize(width, height);
+    composer.setPixelRatio(xrayPixelRatio());
     composer.setSize(width, height);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
-  }).observe(container);
+  });
 }

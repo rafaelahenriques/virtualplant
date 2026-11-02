@@ -15,7 +15,6 @@ export const peony: Species = {
   id: 'peony',
   commonName: 'Chinese peony',
   scientificName: 'Paeonia lactiflora',
-  family: 'Paeoniaceae',
   habitat: 'Temperate East Asia, needs winter chill',
   height: '30 to 90 cm',
   flower: '7 to 20 petals, nine leaflets per leaf, many yellow stamens',

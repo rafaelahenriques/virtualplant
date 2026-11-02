@@ -145,7 +145,6 @@ export const orchid: Species = {
   id: 'orchid',
   commonName: 'Moth orchid',
   scientificName: 'Phalaenopsis amabilis',
-  family: 'Orchidaceae',
   habitat: 'Grows on trees in lowland Southeast Asian rainforest',
   height: 'Flower spike to about 60 cm',
   flower: '3 sepals, 2 broad petals and a three-lobed lip on an arching spike',

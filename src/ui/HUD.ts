@@ -1,5 +1,6 @@
 import type { Hand } from 'ml5';
 import type { Point, Size } from '../core/math';
+import { screenPixelRatio } from '../core/Renderer';
 import type { ScanRect } from '../core/ScanWindow';
 import { recognizePinch } from '../tracking/GestureRecognizer';
 import { videoToViewport } from '../tracking/videoSpace';
@@ -11,7 +12,8 @@ const BOX_PADDING = 18;
 const LABEL_INSET = 8;
 const SCALE_INSET = 40;
 const SCALE_MIN_PIXELS = 60;
-const SCALE_MIN_VIEWPORT = 760;
+const SCALE_MIN_WIDTH = 760;
+const SCALE_MIN_HEIGHT = 530;
 const SCALE_STEPS = [1, 2, 5, 10, 20, 50, 100];
 
 /** Tracking overlay, drawn as if the mirrored camera image filled the screen. */
@@ -20,6 +22,7 @@ export class HUD {
   private readonly context: CanvasRenderingContext2D;
   private hands: Hand[] = [];
   private video: Size = { width: 0, height: 0 };
+  private drawn = '';
 
   constructor(container: HTMLElement) {
     const context = this.canvas.getContext('2d');
@@ -39,7 +42,26 @@ export class HUD {
    * is false when the interface is hidden, which leaves just the scan window's frame.
    */
   draw(scan: ScanRect, label: string, pxPerCm: number, showText: boolean): void {
-    this.prepareCanvas();
+    const pixelRatio = screenPixelRatio();
+    const width = Math.round(this.canvas.clientWidth * pixelRatio);
+    const height = Math.round(this.canvas.clientHeight * pixelRatio);
+
+    // Most frames have nothing new on this full-screen canvas, so leave it for the browser as is.
+    const content = [
+      scan.x,
+      scan.y,
+      scan.size,
+      label,
+      Math.round(pxPerCm * 100),
+      showText,
+      width,
+      height,
+      this.hands.length,
+    ].join();
+    if (this.hands.length === 0 && content === this.drawn) return;
+    this.drawn = content;
+
+    this.prepareCanvas(width, height, pixelRatio);
     this.drawScanFrame(scan);
     if (showText) {
       this.drawScanLabels(scan, label);
@@ -55,11 +77,8 @@ export class HUD {
     this.drawPinch(hand, toScreen(hand.thumb_tip), toScreen(hand.index_finger_tip));
   }
 
-  private prepareCanvas(): void {
+  private prepareCanvas(width: number, height: number, pixelRatio: number): void {
     const { canvas, context } = this;
-    const pixelRatio = window.devicePixelRatio;
-    const width = canvas.clientWidth * pixelRatio;
-    const height = canvas.clientHeight * pixelRatio;
 
     if (canvas.width !== width || canvas.height !== height) {
       canvas.width = width;
@@ -77,7 +96,7 @@ export class HUD {
   private drawScaleBar(pxPerCm: number): void {
     const { context, canvas } = this;
     // On a phone the controls fill the lower half of the screen.
-    if (canvas.clientWidth < SCALE_MIN_VIEWPORT) return;
+    if (canvas.clientWidth < SCALE_MIN_WIDTH || canvas.clientHeight < SCALE_MIN_HEIGHT) return;
 
     const centimetres = SCALE_STEPS.find((step) => step * pxPerCm >= SCALE_MIN_PIXELS) ?? 100;
     const length = Math.round(centimetres * pxPerCm);

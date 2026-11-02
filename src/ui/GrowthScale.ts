@@ -18,12 +18,12 @@ export function createGrowthScale(store: EcosystemStore): void {
     store.getState().setGrowthTarget(Number(input.value));
   });
 
-  let shown = -1;
+  let shownStage = '';
   const render = (growth: number) => {
-    if (growth === shown) return;
-    shown = growth;
     input.value = String(growth);
     const stage = describeGrowth(growth);
+    if (stage === shownStage) return;
+    shownStage = stage;
     input.setAttribute('aria-valuetext', stage);
     items.forEach((item) => {
       if (item.textContent === stage) item.setAttribute('aria-current', 'true');
@@ -31,6 +31,8 @@ export function createGrowthScale(store: EcosystemStore): void {
     });
   };
 
-  store.subscribe((state) => render(state.growthTarget));
+  store.subscribe((state, previous) => {
+    if (state.growthTarget !== previous.growthTarget) render(state.growthTarget);
+  });
   render(store.getState().growthTarget);
 }

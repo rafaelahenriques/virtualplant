@@ -23,13 +23,14 @@ export class PlantManager {
   private target: Plant | null = null;
   private transition: gsap.core.Tween | null = null;
   private growth: number;
-  private motion = 1;
+  private motion: number;
   /** Eases to the next plant's tint, so the window doesn't flash when plants swap. */
   readonly windowColor = new Color(0x15171a);
 
-  constructor(scene: Scene, growth: number) {
+  constructor(scene: Scene, growth: number, motion: number) {
     this.scene = scene;
     this.growth = growth;
+    this.motion = motion;
   }
 
   add(species: Species): Plant {

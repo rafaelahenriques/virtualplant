@@ -7,12 +7,9 @@ export interface Frame {
   elapsed: number;
 }
 
-export type FrameCallback = (frame: Frame) => void;
-
 export class AnimationLoop {
   private readonly renderer: WebGLRenderer;
   private readonly timer = new Timer();
-  private readonly callbacks = new Set<FrameCallback>();
 
   constructor(renderer: WebGLRenderer) {
     this.renderer = renderer;
@@ -20,19 +17,10 @@ export class AnimationLoop {
     this.timer.connect(document);
   }
 
-  add(callback: FrameCallback): void {
-    this.callbacks.add(callback);
-  }
-
-  start(): void {
+  start(callback: (frame: Frame) => void): void {
     this.renderer.setAnimationLoop((time) => {
       this.timer.update(time);
-      const frame = { delta: this.timer.getDelta(), elapsed: this.timer.getElapsed() };
-      for (const callback of this.callbacks) callback(frame);
+      callback({ delta: this.timer.getDelta(), elapsed: this.timer.getElapsed() });
     });
-  }
-
-  stop(): void {
-    this.renderer.setAnimationLoop(null);
   }
 }

@@ -225,7 +225,6 @@ export const hedgehog: Species = {
   id: 'hedgehog',
   commonName: "Engelmann's hedgehog cactus",
   scientificName: 'Echinocereus engelmannii',
-  family: 'Cactaceae',
   habitat: 'Rocky slopes of the Sonoran and Mojave deserts',
   height: '14 to 45 cm, in clumps',
   flower: 'Magenta tepals, yellow anthers and a green stigma on 10 to 13 ribbed stems',

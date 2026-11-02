@@ -15,7 +15,6 @@ export const poppy: Species = {
   id: 'poppy',
   commonName: 'Arctic poppy',
   scientificName: 'Papaver radicatum',
-  family: 'Papaveraceae',
   habitat: 'Gravel, scree and rocky tundra of the high Arctic',
   height: 'Under 15 cm',
   flower: '2 sepals that drop as it opens, 4 yellow or white petals, a nodding bud',

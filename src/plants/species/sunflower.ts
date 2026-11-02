@@ -56,7 +56,6 @@ export const sunflower: Species = {
   id: 'sunflower',
   commonName: 'Common sunflower',
   scientificName: 'Helianthus annuus',
-  family: 'Asteraceae',
   habitat: 'Open prairie and plains in full sun',
   height: '100 to 300 cm',
   flower: '17 to 30 ray florets around 150 to 1000 or more disc florets',
