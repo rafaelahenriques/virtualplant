@@ -159,7 +159,7 @@ body {
 .tracking-status,
 .specimen,
 .climate,
-.bar-actions > * {
+.bar-actions {
   transition:
     opacity 300ms,
     visibility 300ms;
@@ -175,7 +175,7 @@ body {
 .interface[data-hidden='true'] .tracking-status,
 .interface[data-hidden='true'] .specimen,
 .interface[data-hidden='true'] .climate,
-.interface[data-hidden='true'] .bar-actions > :not(#interface-toggle) {
+.interface[data-hidden='true'] .bar-actions {
   opacity: 0;
   visibility: hidden;
 }
@@ -307,6 +307,18 @@ body {
   grid-template-columns: 1fr auto;
   gap: 6px 24px;
   align-items: center;
+}
+
+.bar-start {
+  grid-row: span 2;
+  align-self: start;
+  justify-items: start;
+  display: grid;
+}
+
+/* Lines up with the wordmark's text, inside its rules. */
+#interface-toggle {
+  padding-inline: 15px 2px;
 }
 
 .wordmark {
@@ -659,6 +671,10 @@ button {
 
   .bar {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bar-start {
+    grid-row: auto;
   }
 
   .bar-actions {
