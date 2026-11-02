@@ -83,6 +83,13 @@ describe('ecosystemStore', () => {
     expect(store.getState().animationOn).toBe(false);
   });
 
+  it('starts with the music off, because browsers only allow it after a click', () => {
+    const store = createEcosystemStore();
+    expect(store.getState().musicOn).toBe(false);
+    store.getState().setMusicOn(true);
+    expect(store.getState().musicOn).toBe(true);
+  });
+
   it('hides and shows the interface', () => {
     const store = createEcosystemStore();
     expect(store.getState().interfaceVisible).toBe(true);
