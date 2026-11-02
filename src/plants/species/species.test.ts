@@ -238,6 +238,12 @@ describe('hedgehog cactus', () => {
     expect(perAreole).toBeLessThanOrEqual(20);
   });
 
+  it('keeps its spines stiff while its flowers sway', () => {
+    const [spines, flower] = form.bodies[0]!.heads;
+    expect(spines?.rigid).toBe(true);
+    expect(flower?.rigid).toBeFalsy();
+  });
+
   it('has flowers of 6 to 9 cm with a green stigma', () => {
     const flowers = form.bodies[0]!.heads.slice(1);
     const tepals = flowers.flatMap((head) => head.blades).filter((b) => b.role === 'tepal');

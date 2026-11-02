@@ -1,6 +1,8 @@
 uniform float uTime;
 uniform float uMotion;
 uniform float uGrowth;
+// 1 for parts that sway, 0 for stiff ones.
+uniform float uFlex;
 
 // azimuth, axial offset, radial offset
 attribute vec3 aPlacement;
@@ -45,7 +47,7 @@ void main() {
 
   // The centre line is a circular arc in the plane of radial (z) and axial (y).
   float along = uv.y * len * emerge;
-  float gust = sin(uTime * 1.2 + azimuth * 2.0) * uMotion;
+  float gust = sin(uTime * 1.2 + azimuth * 2.0) * uMotion * uFlex;
   float baseAngle = mix(BUD_ANGLE, aForm.x, open) + gust * uv.y * 0.03;
   float curvature = mix(BUD_CURL, aForm.y, open) / len;
   if (abs(curvature) < 0.001) curvature = 0.001;

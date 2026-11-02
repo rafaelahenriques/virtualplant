@@ -42,6 +42,7 @@ interface MaterialOptions {
   xray: number;
   glow: number;
   veins: number;
+  flex?: number;
   baseColor?: number;
   tipColor?: number;
 }
@@ -182,6 +183,7 @@ export class Plant {
       xray: PETAL_XRAY,
       glow: spec.glow,
       veins: spec.veins,
+      flex: spec.rigid ? 0 : 1,
     });
     const mesh = new Mesh(createHeadGeometry(spec.blades, spec.detail));
     // Blade positions come from the shader, so the geometry's bounds mean nothing.
@@ -220,6 +222,7 @@ export class Plant {
     xray,
     glow,
     veins,
+    flex = 1,
     baseColor = 0xffffff,
     tipColor = 0xffffff,
   }: MaterialOptions): Materials {
@@ -229,6 +232,7 @@ export class Plant {
         fragmentShader: xrayFragment,
         uniforms: {
           ...this.uniforms,
+          uFlex: { value: flex },
           uBaseColor: { value: new Color(baseColor) },
           uTipColor: { value: new Color(tipColor) },
           uColor: { value: new Color(xray) },
@@ -249,6 +253,7 @@ export class Plant {
         fragmentShader: specimenFragment,
         uniforms: {
           ...this.uniforms,
+          uFlex: { value: flex },
           uBaseColor: { value: new Color(baseColor) },
           uTipColor: { value: new Color(tipColor) },
           uVeins: { value: veins },
