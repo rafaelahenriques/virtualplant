@@ -3,6 +3,8 @@ import '@fontsource/instrument-serif/400-italic.css';
 import './style.css';
 import type { WebGLRenderer } from 'three';
 import type { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { MusicPlayer } from './audio/MusicPlayer';
+import vestige from './audio/vestige.m4a';
 import { AnimationLoop } from './core/AnimationLoop';
 import { createCamera, frameSubject, pixelsPerCentimetre } from './core/Camera';
 import { createGlowComposer, createRenderer, fitToContainer, renderInRect } from './core/Renderer';
@@ -98,7 +100,7 @@ async function main(boot: BootScreen): Promise<void> {
     createEnvironmentPanel(ecosystemStore);
     createSpeciesPanel(ecosystemStore);
     createGrowthScale(ecosystemStore);
-    createToolbar(ecosystemStore, tracker);
+    createToolbar(ecosystemStore, tracker, new MusicPlayer(vestige));
     return 'Ready';
   });
 

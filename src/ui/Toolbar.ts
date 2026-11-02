@@ -1,17 +1,24 @@
+import type { MusicPlayer } from '../audio/MusicPlayer';
 import type { EcosystemStore } from '../store/ecosystemStore';
 import type { HandTracker } from '../tracking/HandTracker';
 import { describeTrackingError } from './copy';
 import { required } from './element';
 
+const MUSIC_FAILED = 'The music could not play. Check your connection, then try again.';
 const IDLE_HINT = 'Grow it with your fingers, or drag Growth.';
 const SEARCHING = 'Hold a hand up to the camera.';
 const TRACKING_HINT = 'Spread your thumb and index finger to grow. Move your palm to scan.';
 
-/** The interface and animation switches, and the camera button with its status line. */
-export function createToolbar(store: EcosystemStore, tracker: HandTracker): void {
+/** The interface, animation and music switches, and the camera button with its status line. */
+export function createToolbar(
+  store: EcosystemStore,
+  tracker: HandTracker,
+  player: MusicPlayer,
+): void {
   const ui = required('interface');
   const hide = required<HTMLButtonElement>('interface-toggle');
   const animation = required<HTMLButtonElement>('animation-toggle');
+  const music = required<HTMLButtonElement>('music-toggle');
   const camera = required<HTMLButtonElement>('tracking-toggle');
   const status = required('tracking-status');
 
@@ -34,6 +41,28 @@ export function createToolbar(store: EcosystemStore, tracker: HandTracker): void
   });
   store.subscribe((state) => renderAnimation(state.animationOn));
   renderAnimation(store.getState().animationOn);
+
+  const renderMusic = (on: boolean) => {
+    music.setAttribute('aria-pressed', String(on));
+    music.textContent = on ? 'Music on' : 'Music off';
+  };
+  music.addEventListener('click', async () => {
+    const on = !store.getState().musicOn;
+    store.getState().setMusicOn(on);
+    if (!on) {
+      player.pause();
+      return;
+    }
+    try {
+      await player.play();
+    } catch {
+      // Switching it off while it loads also lands here, and isn't a failure.
+      if (!store.getState().musicOn) return;
+      store.getState().setMusicOn(false);
+      status.textContent = MUSIC_FAILED;
+    }
+  });
+  store.subscribe((state) => renderMusic(state.musicOn));
 
   let tracking = false;
   let handInView = false;
