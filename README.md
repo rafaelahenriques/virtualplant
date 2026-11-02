@@ -77,16 +77,16 @@ The camera is only requested when you press **Start** under **Hand tracking**. B
 
 ## Stack
 
-| Technology       | Purpose                                     |
-| ---------------- | ------------------------------------------- |
-| TypeScript, Vite | Application logic, development and bundling |
-| Three.js         | 3D scene and plant rendering on WebGL 2     |
-| GLSL             | Plant animation and environmental effects   |
-| ml5.js HandPose  | Hand tracking, 21 landmarks per hand        |
-| Zustand          | Ecosystem state                             |
-| GSAP             | Smooth transitions                          |
-| lil-gui          | Development controls                        |
-| Vitest           | Unit tests                                  |
+| Technology                          | Purpose                                     |
+| ----------------------------------- | ------------------------------------------- |
+| TypeScript, Vite                    | Application logic, development and bundling |
+| Three.js                            | 3D scene and plant rendering on WebGL 2     |
+| GLSL                                | Plant animation and environmental effects   |
+| ml5.js HandPose                     | Hand tracking, 21 landmarks per hand        |
+| Zustand                             | Ecosystem state                             |
+| GSAP                                | Smooth transitions                          |
+| Schibsted Grotesk, Instrument Serif | Self-hosted interface type                  |
+| Vitest                              | Unit tests                                  |
 
 ## Architecture
 
@@ -107,7 +107,7 @@ src/
 ├── plants/     Plant, GrowthSystem, form, geometry
 │   └── species/  One file per species: climate ranges, sources and form
 ├── shaders/    stem.vert, leaf.vert, petal.vert, xray.frag, specimen.frag
-├── ui/         EnvironmentPanel, HUD
+├── ui/         EnvironmentPanel, SpeciesPanel, GrowthScale, Toolbar, HUD, copy
 ├── store/      ecosystemStore
 ├── types/      Declarations for untyped packages
 └── main.ts
@@ -115,7 +115,9 @@ src/
 
 Shaders are imported as strings with Vite's `?raw` suffix, for example `import leafVertex from '../shaders/leaf.vert?raw'`.
 
-The visual direction is plants as x-ray specimens under machine observation: translucent, veined tissue on near-black, a colour scan window, thin tracking overlays and monospace readouts.
+The visual direction is plants as x-ray specimens under machine observation: translucent, veined tissue glowing on grainy near-black, thin tracking overlays and monospace readouts. The interface stays monochrome, so colour only ever appears inside the scan window. Each climate slider draws the current plant's limits and best range on its track.
+
+The camera is only used on your device. Video frames go to the hand model in your browser and are never sent anywhere.
 
 ## Roadmap
 
