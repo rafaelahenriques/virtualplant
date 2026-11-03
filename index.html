@@ -80,18 +80,20 @@
       <section class="specimen" aria-labelledby="species-name">
         <h1 id="species-name" class="species-name" aria-live="polite"></h1>
         <p id="species-latin" class="species-latin"></p>
-        <p id="species-note" class="species-note"></p>
-        <p id="species-match" class="species-match" aria-live="polite"></p>
-        <p id="species-others" class="species-others"></p>
-        <details class="sources">
-          <summary>Sources and credits</summary>
-          <ul id="species-sources"></ul>
-          <p class="credits">
-            Music: Vestige by Lennon Hutton, from Epidemic Sound. Hand tracking:
-            <a href="https://ml5js.org/" target="_blank" rel="noreferrer">ml5.js</a>,
-            <a href="https://ml5js.org/license" target="_blank" rel="noreferrer">licence</a>.
-          </p>
-        </details>
+        <div class="specimen-about">
+          <p id="species-note" class="species-note"></p>
+          <p id="species-match" class="species-match" aria-live="polite"></p>
+          <p id="species-others" class="species-others"></p>
+          <details class="sources">
+            <summary>Sources and credits</summary>
+            <ul id="species-sources"></ul>
+            <p class="credits">
+              Music: Vestige by Lennon Hutton, from Epidemic Sound. Hand tracking:
+              <a href="https://ml5js.org/" target="_blank" rel="noreferrer">ml5.js</a>,
+              <a href="https://ml5js.org/license" target="_blank" rel="noreferrer">licence</a>.
+            </p>
+          </details>
+        </div>
 
         <div class="growth">
           <label class="growth-label" for="growth">Growth</label>
@@ -107,6 +109,12 @@
         </div>
         <div id="climate-factors"></div>
       </section>
+
+      <div class="phone-tabs" role="group" aria-label="Panels">
+        <button class="quiet" type="button" data-opens="climate">Climate</button>
+        <button class="quiet" type="button" data-opens="about">About</button>
+        <button class="quiet" type="button" data-opens="options">Options</button>
+      </div>
     </main>
 
     <div class="grain" aria-hidden="true"></div>
