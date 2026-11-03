@@ -122,7 +122,7 @@ src/
 ├── shaders/    stem.vert, leaf.vert, petal.vert, tissue.glsl, xray.frag, specimen.frag,
 │               fullscreen.vert, persistence.frag
 ├── ui/         BootScreen, BootFlower, EnvironmentPanel, SpeciesPanel, GrowthScale, Toolbar,
-│               PhonePanels, HUD, copy
+│               PhonePanels, TouchSliders, HUD, copy
 ├── audio/      MusicPlayer and the track
 ├── store/      ecosystemStore
 ├── types/      Declarations for untyped packages

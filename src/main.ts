@@ -24,6 +24,7 @@ import { HUD } from './ui/HUD';
 import { createPhonePanels } from './ui/PhonePanels';
 import { createSpeciesPanel } from './ui/SpeciesPanel';
 import { createToolbar } from './ui/Toolbar';
+import { createTouchSliders } from './ui/TouchSliders';
 
 const count = new Intl.NumberFormat('en');
 
@@ -86,6 +87,7 @@ async function main(boot: BootScreen): Promise<void> {
     createGrowthScale(ecosystemStore);
     createToolbar(ecosystemStore, tracker, new MusicPlayer(vestige));
     createPhonePanels();
+    createTouchSliders();
     return 'Ready';
   });
 
