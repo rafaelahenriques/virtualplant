@@ -1,4 +1,4 @@
-# Generative Ecosystem
+# Generative Flora
 
 A 3D plant you grow with your hands. Set a climate, or choose a real place, and a climate model picks which of eight real species could live there. Pinch your fingers to move it through its growth stages, and move your palm to scan its x-ray in colour.
 

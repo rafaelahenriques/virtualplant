@@ -2,7 +2,7 @@
   "name": "virtualplant",
   "version": "0.1.0",
   "private": true,
-  "description": "Generative Ecosystem: a living 3D environment driven by hand gestures",
+  "description": "Generative Flora: a 3D plant you grow with your hands",
   "type": "module",
   "scripts": {
     "dev": "vite",
