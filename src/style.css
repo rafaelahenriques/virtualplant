@@ -759,10 +759,47 @@ button {
     font-size: 17px;
   }
 
-  /* Bigger than on a desktop, for a fingertip. */
+  /* Climate needs the room, and the scan window still names the plant. */
+  .interface[data-panel='climate'] .species-latin {
+    display: none;
+  }
+
+  /*
+   * A fingertip's worth of slider. The thumb is a clear square with the dot and its glow painted
+   * inside, because iOS cuts off anything drawn outside a slider. The slider reaches past its row,
+   * so the dot still travels almost to the row's ends.
+   */
   .scale {
-    --thumb: 16px;
+    --thumb: 44px;
     --track: 44px;
+    width: calc(100% + 28px);
+    margin-inline: -14px;
+    background-size: calc(100% - 28px) 1px;
+  }
+
+  .scale::-webkit-slider-thumb {
+    height: var(--track);
+    margin-top: 0;
+    background: radial-gradient(
+      circle closest-side,
+      #fff 6px,
+      var(--bone) 8px,
+      rgb(238 241 236 / 26%) 9px,
+      transparent
+    );
+    box-shadow: none;
+  }
+
+  .scale::-moz-range-thumb {
+    height: var(--track);
+    background: radial-gradient(
+      circle closest-side,
+      #fff 6px,
+      var(--bone) 8px,
+      rgb(238 241 236 / 26%) 9px,
+      transparent
+    );
+    box-shadow: none;
   }
 
   .growth {
@@ -824,8 +861,9 @@ button {
 
   .interface[data-panel='climate'] .species-match {
     order: 2;
-    margin-top: 8px;
+    margin-top: 6px;
     padding-inline: 16px;
+    font-size: 13px;
   }
 
   .species-note {
@@ -858,24 +896,40 @@ button {
     font-size: 16px;
   }
 
-  /* One row per factor: its name, its slider and its reading. */
+  /* One row per factor: its name over its reading, then the longest slider that fits. */
   .factor {
     display: grid;
-    grid-template-columns: 5.8em minmax(0, 1fr) 5.8em;
-    gap: 10px;
+    grid-template-columns: 6.4em minmax(0, 1fr);
+    column-gap: 10px;
     align-items: center;
     padding: 0;
   }
 
   .factor-head {
-    display: contents;
+    flex-direction: column;
+    gap: 0;
+    align-items: flex-start;
+    line-height: 1.2;
+  }
+
+  .factor-head label {
+    font-size: 13px;
   }
 
   .factor-value {
-    order: 1;
     font-size: 14px;
     letter-spacing: 0;
-    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* Inset by half the dot, so the plant's ranges drawn on the track line up with the dot's travel. */
+  .factor-track {
+    margin-inline: 8px;
+  }
+
+  .factor-track .scale {
+    width: calc(100% + 44px);
+    margin-inline: -22px;
   }
 
   .factor-note {
@@ -937,10 +991,6 @@ button {
     display: none;
   }
 
-  .species-match {
-    font-size: 13px;
-  }
-
   .factor .scale {
     --track: 36px;
   }
@@ -999,8 +1049,10 @@ button {
   }
 
   .species-latin,
-  .interface[data-panel] .species-latin {
+  .interface[data-panel] .species-latin,
+  .interface[data-panel='climate'] .species-latin {
     grid-area: 4 / 1;
+    display: block;
     margin-top: 2px;
     font-size: 17px;
   }
@@ -1061,6 +1113,13 @@ button {
 
   .growth {
     margin-top: 12px;
+  }
+}
+
+/* Vertical drags still scroll a panel, and sideways ones belong to the slider. */
+@media (pointer: coarse) {
+  .scale {
+    touch-action: pan-y;
   }
 }
 
