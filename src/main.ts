@@ -21,6 +21,7 @@ import { required } from './ui/element';
 import { createEnvironmentPanel } from './ui/EnvironmentPanel';
 import { createGrowthScale } from './ui/GrowthScale';
 import { HUD } from './ui/HUD';
+import { createPhonePanels } from './ui/PhonePanels';
 import { createSpeciesPanel } from './ui/SpeciesPanel';
 import { createToolbar } from './ui/Toolbar';
 
@@ -84,6 +85,7 @@ async function main(boot: BootScreen): Promise<void> {
     createSpeciesPanel(ecosystemStore);
     createGrowthScale(ecosystemStore);
     createToolbar(ecosystemStore, tracker, new MusicPlayer(vestige));
+    createPhonePanels();
     return 'Ready';
   });
 

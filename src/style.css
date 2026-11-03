@@ -161,7 +161,8 @@ body {
 .tracking-status,
 .specimen,
 .climate,
-.bar-actions {
+.bar-actions,
+.phone-tabs {
   transition:
     opacity 300ms,
     visibility 300ms;
@@ -177,7 +178,8 @@ body {
 .interface[data-hidden='true'] .tracking-status,
 .interface[data-hidden='true'] .specimen,
 .interface[data-hidden='true'] .climate,
-.interface[data-hidden='true'] .bar-actions {
+.interface[data-hidden='true'] .bar-actions,
+.interface[data-hidden='true'] .phone-tabs {
   opacity: 0;
   visibility: hidden;
 }
@@ -492,22 +494,23 @@ button {
 /* Sliders: a real range input over a track that shows the plant's tolerance. */
 .scale {
   --thumb: 11px;
+  --track: 22px;
   appearance: none;
   display: block;
   width: 100%;
-  height: 22px;
+  height: var(--track);
   margin: 0;
   background: linear-gradient(var(--line), var(--line)) center / 100% 1px no-repeat;
   cursor: pointer;
 }
 
 .scale::-webkit-slider-runnable-track {
-  height: 22px;
+  height: var(--track);
   background: none;
 }
 
 .scale::-moz-range-track {
-  height: 22px;
+  height: var(--track);
   background: none;
 }
 
@@ -515,7 +518,7 @@ button {
   appearance: none;
   width: var(--thumb);
   height: var(--thumb);
-  margin-top: calc((22px - var(--thumb)) / 2);
+  margin-top: calc((var(--track) - var(--thumb)) / 2);
   border-radius: 50%;
   background: radial-gradient(circle, #fff 45%, var(--bone));
   box-shadow:
@@ -632,29 +635,52 @@ button {
   color: var(--bone);
 }
 
-/* On a phone, either way up, the plant keeps the top half and the controls scroll beneath it. */
+/* Only a phone has these. */
+.phone-tabs {
+  display: none;
+}
+
+/*
+ * On a phone, either way up, the plant keeps the screen. Only its name and growth stay out, and
+ * one panel at a time opens above the tabs, so the plant stays in view while a slider moves it.
+ */
 @media (max-width: 760px), (max-height: 530px) {
   body {
     font-size: 14px;
   }
 
-  .boot-status {
-    left: 16px;
-    bottom: auto;
-    top: calc(34% + min(31vh, 39vw) + 12px);
+  /* Loading: the number sits on top of the log's last lines, and they stack instead of overlap. */
+  .boot {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 14px;
+    padding: 16px;
   }
 
-  .boot-log {
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
+  .boot-status,
+  .boot-log,
+  .boot-error {
+    position: static;
     width: auto;
   }
 
-  .boot-error {
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
+  /* Three rows' height from the start, so the number doesn't climb as they arrive. */
+  .boot-log {
+    min-height: 61px;
+  }
+
+  .boot-percent {
+    font-size: 64px;
+  }
+
+  /* The log's last line already says this. */
+  .boot-step {
+    display: none;
+  }
+
+  .boot-log li:nth-last-child(n + 4) {
+    display: none;
   }
 
   .corner {
@@ -663,51 +689,363 @@ button {
 
   .interface {
     inset: 0;
-    padding: 16px;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto minmax(0, 1fr);
-    gap: 10px;
-    overflow-y: auto;
-    pointer-events: auto;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
 
   .interface::before {
-    background: linear-gradient(to top, rgb(8 9 11 / 96%) 45%, transparent 72%);
+    background: linear-gradient(to top, rgb(8 9 11 / 96%) 22%, transparent 46%);
   }
 
-  .bar {
-    grid-template-columns: minmax(0, 1fr);
+  .interface[data-panel]::before {
+    background: linear-gradient(to top, rgb(8 9 11 / 96%) 44%, transparent 62%);
   }
 
-  /* On one line here, because the top bar must stay clear of the scan window. */
+  /* These two dissolve, so what's inside them can be stacked up the screen together. */
+  .bar,
+  .specimen {
+    display: contents;
+  }
+
+  /* With its wrapper gone, the hidden interface has to reach these one by one to fade them. */
+  .specimen > * {
+    transition:
+      opacity 300ms,
+      visibility 300ms;
+  }
+
+  .interface[data-hidden='true'] .specimen > * {
+    opacity: 0;
+    visibility: hidden;
+  }
+
   .bar-start {
-    grid-row: auto;
+    align-self: stretch;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: auto;
+    padding: 6px 16px;
   }
 
-  .bar-actions {
-    justify-content: space-between;
+  #interface-toggle {
+    padding: 12px 0 12px 12px;
   }
 
+  .species-name,
+  .species-latin {
+    order: 1;
+    padding-inline: 16px;
+  }
+
+  .species-name {
+    font-size: 34px;
+  }
+
+  .species-latin {
+    margin-top: 4px;
+    font-size: 20px;
+  }
+
+  .interface[data-panel] .species-name {
+    font-size: 24px;
+    letter-spacing: -0.03em;
+  }
+
+  .interface[data-panel] .species-latin {
+    margin-top: 2px;
+    font-size: 17px;
+  }
+
+  /* Bigger than on a desktop, for a fingertip. */
+  .scale {
+    --thumb: 16px;
+    --track: 44px;
+  }
+
+  .growth {
+    order: 3;
+    max-width: none;
+    margin-top: 12px;
+    padding: 0 16px 10px;
+  }
+
+  /* The label and the stages sit in the empty part of the slider's taller track. */
+  .growth-label {
+    margin-bottom: -10px;
+  }
+
+  .growth-stages {
+    margin-top: -6px;
+  }
+
+  .interface[data-panel] .growth {
+    display: none;
+  }
+
+  /* The panels, all closed until a tab opens one. */
+  .specimen-about,
+  .climate,
+  .bar-actions,
   .tracking-status {
-    grid-column: 1;
-    justify-self: start;
+    display: none;
+    order: 3;
+  }
+
+  .specimen-about,
+  .climate {
+    flex: 0 1 auto;
+    align-self: stretch;
+    min-height: 0;
+    max-height: 48%;
+    margin-top: 10px;
+    padding: 0 16px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    pointer-events: auto;
+  }
+
+  .interface[data-panel='about'] .specimen-about,
+  .interface[data-panel='climate'] .climate,
+  .interface[data-panel='options'] .tracking-status {
+    display: block;
+  }
+
+  /* Climate keeps the match line above its sliders, because that's what the sliders change. */
+  .interface[data-panel='climate'] .specimen-about {
+    display: contents;
+  }
+
+  .interface[data-panel='climate'] .specimen-about > :not(.species-match) {
+    display: none;
+  }
+
+  .interface[data-panel='climate'] .species-match {
+    order: 2;
+    margin-top: 8px;
+    padding-inline: 16px;
+  }
+
+  .species-note {
+    margin-top: 0;
+    padding-top: 12px;
+  }
+
+  .sources {
+    padding-bottom: 12px;
+  }
+
+  .sources summary {
+    padding-block: 8px;
+  }
+
+  .place {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding-bottom: 0;
+  }
+
+  /* At 16px iOS doesn't zoom the page on focus. The arrow says it's a list. */
+  .place select {
+    height: 44px;
+    padding-block: 0;
+    border-bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23eef1ec'/%3E%3C/svg%3E")
+      right 2px center no-repeat;
+    font-size: 16px;
+  }
+
+  /* One row per factor: its name, its slider and its reading. */
+  .factor {
+    display: grid;
+    grid-template-columns: 5.8em minmax(0, 1fr) 5.8em;
+    gap: 10px;
+    align-items: center;
+    padding: 0;
+  }
+
+  .factor-head {
+    display: contents;
+  }
+
+  .factor-value {
+    order: 1;
+    font-size: 14px;
+    letter-spacing: 0;
+    text-align: right;
+  }
+
+  .factor-note {
+    display: none;
+  }
+
+  .interface[data-panel='options'] .bar-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 12px;
+    margin-top: 10px;
+    padding: 4px 16px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .bar-actions .quiet {
+    min-height: 44px;
+    padding-inline: 0;
     text-align: left;
   }
 
-  .specimen {
-    margin-top: 40vh;
-    max-width: none;
+  /* A touchscreen keeps the last thing tapped hovered, which would look switched on. */
+  .quiet:not([data-on='true']):hover {
+    color: var(--ash);
   }
 
-  .climate {
-    align-self: start;
+  #tracking-toggle {
+    grid-column: 1 / -1;
+    min-height: 44px;
+  }
+
+  .tracking-status {
+    max-width: none;
+    padding: 8px 16px 12px;
+    text-align: left;
+  }
+
+  .phone-tabs {
+    order: 4;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--line);
+  }
+
+  .phone-tabs button {
+    min-height: 48px;
+    padding: 0;
+  }
+
+  .phone-tabs button[data-on='true'] {
+    box-shadow: inset 0 1px 0 var(--bone);
   }
 }
 
-@media (max-height: 760px) and (min-width: 761px) {
+/* A short phone, or one with its browser bars showing. The scan window still names the plant. */
+@media (max-height: 620px) and (orientation: portrait) {
+  .interface[data-panel] .species-name,
+  .interface[data-panel] .species-latin {
+    display: none;
+  }
+
+  .species-match {
+    font-size: 13px;
+  }
+
+  .factor .scale {
+    --track: 36px;
+  }
+
+  .place select {
+    height: 40px;
+  }
+}
+
+/* A phone on its side: name and growth on the left, the plant in the middle, panels on the right. */
+@media (max-height: 530px) and (orientation: landscape) {
+  .boot {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .boot-log {
+    width: 26vw;
+  }
+
+  .boot-log li {
+    grid-template-columns: 5ch minmax(0, 1fr);
+  }
+
+  .boot-log li > span:nth-child(3) {
+    display: none;
+  }
+
+  .interface {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 46vh minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  }
+
+  .interface::before {
+    background: linear-gradient(to top, rgb(8 9 11 / 90%), transparent 55%);
+  }
+
+  .interface[data-panel]::before {
+    background:
+      linear-gradient(to left, rgb(8 9 11 / 96%) 30%, transparent 42%),
+      linear-gradient(to top, rgb(8 9 11 / 90%), transparent 55%);
+  }
+
+  .bar-start {
+    grid-area: 1 / 1 / auto / -1;
+    margin-bottom: 0;
+  }
+
+  .species-name,
+  .interface[data-panel] .species-name {
+    grid-area: 3 / 1;
+    font-size: 28px;
+    letter-spacing: -0.04em;
+  }
+
+  .species-latin,
+  .interface[data-panel] .species-latin {
+    grid-area: 4 / 1;
+    margin-top: 2px;
+    font-size: 17px;
+  }
+
+  .growth,
+  .interface[data-panel] .growth {
+    grid-area: 5 / 1;
+    display: block;
+  }
+
+  .interface[data-panel='climate'] .species-match {
+    grid-area: 2 / 1;
+    align-self: end;
+    margin: 0 0 8px;
+    padding-inline: 16px;
+  }
+
+  .specimen-about,
+  .climate {
+    grid-area: 2 / 3 / 5 / 4;
+    align-self: end;
+    max-height: 100%;
+    margin-top: 0;
+  }
+
+  .interface[data-panel='options'] .bar-actions {
+    grid-area: 2 / 3;
+    align-self: end;
+    margin-top: 0;
+    border-top: 0;
+  }
+
+  .tracking-status {
+    grid-area: 3 / 3 / 5 / 4;
+    align-self: end;
+    justify-self: stretch;
+  }
+
+  .phone-tabs {
+    grid-area: 5 / 3;
+    align-self: end;
+  }
+}
+
+@media (max-height: 760px) and (min-height: 531px) and (min-width: 761px) {
   .species-note,
   .species-others {
     display: none;
